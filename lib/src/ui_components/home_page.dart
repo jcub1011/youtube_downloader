@@ -10,6 +10,8 @@ class HomePage extends StatefulWidget {
 }
 
 // https://coolors.co/000000-14213d-fca311-e5e5e5-ffffff
+// http://coolors.co/dce0d9-31081f-6b0f1a-595959-808f85
+// https://coolors.co/122c34-224870-2a4494-4ea5d9-44cfcb
 class _HomePageState extends State<HomePage> {
   String? sourceUrl;
   final TextEditingController _sourceUrlController = TextEditingController();
@@ -24,15 +26,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 53, 75, 122),
-            Color(0xFF14213D),
-          ],
-          
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        )
+        color: Color(0xFF122C34)
       ),
       child: Scaffold(
         appBar: AppBar(
@@ -71,7 +65,7 @@ class _HomePageState extends State<HomePage> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: const BorderSide(
-                        color: Colors.blueGrey,
+                        color: Color(0xFF224870),
                       )
                     ),
                     filled: false,
@@ -79,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                     // Placeholder text
                     labelText: 'Enter URL here...', 
                     labelStyle: const TextStyle(
-                      color: Color(0xFFE5E5E5),
+                      color: Color(0xFF44CFCB),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -89,7 +83,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 12),
               IconButton(
                 icon: const Icon(Icons.search),
-                color: Colors.white,
+                color: const Color(0xFF44CFCB),
                 onPressed: () => {print("button pressed")}
               )
              ]
