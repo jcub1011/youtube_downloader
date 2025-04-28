@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "Todo Application",
+            "YouTube Downloader",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 25,
@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage> {
           
           // Centers the app bar title
           centerTitle: true, 
-          backgroundColor: Colors.black,
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
         ),
         body: Center(
@@ -61,6 +61,10 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: TextFormField(
                   controller: _sourceUrlController,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.normal,
+                  ),
                   decoration: InputDecoration(
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -73,8 +77,8 @@ class _HomePageState extends State<HomePage> {
                     // Placeholder text
                     labelText: 'Enter URL here...', 
                     labelStyle: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.normal,
+                      color: Colors.black26,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   
