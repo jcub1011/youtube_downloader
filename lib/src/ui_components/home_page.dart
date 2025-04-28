@@ -9,6 +9,7 @@ class HomePage extends StatefulWidget {
 
 }
 
+// https://coolors.co/000000-14213d-fca311-e5e5e5-ffffff
 class _HomePageState extends State<HomePage> {
   String? sourceUrl;
   final TextEditingController _sourceUrlController = TextEditingController();
@@ -25,9 +26,10 @@ class _HomePageState extends State<HomePage> {
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFF4C6663),
-            Color(0xFF80CFA9),
+            Color.fromARGB(255, 53, 75, 122),
+            Color(0xFF14213D),
           ],
+          
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         )
@@ -77,7 +79,7 @@ class _HomePageState extends State<HomePage> {
                     // Placeholder text
                     labelText: 'Enter URL here...', 
                     labelStyle: const TextStyle(
-                      color: Colors.black26,
+                      color: Color(0xFFE5E5E5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -87,6 +89,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 12),
               IconButton(
                 icon: const Icon(Icons.search),
+                color: Colors.white,
                 onPressed: () => {print("button pressed")}
               )
              ]
