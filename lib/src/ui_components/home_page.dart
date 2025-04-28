@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:youtube_downloader/src/ui_components/download_list.dart';
 //import 'package:youtube_downloader/src/ui_components/home_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -6,7 +9,6 @@ class HomePage extends StatefulWidget {
 
   @override
   State<HomePage> createState() => _HomePageState();
-
 }
 
 // https://coolors.co/000000-14213d-fca311-e5e5e5-ffffff
@@ -50,43 +52,57 @@ class _HomePageState extends State<HomePage> {
             ),
             
             padding: const EdgeInsets.all(10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-             children: <Widget>[
-              Expanded(
-                child: TextFormField(
-                  controller: _sourceUrlController,
-                  style: const TextStyle(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      controller: _sourceUrlController,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.normal,
+                      ),
+                      decoration: InputDecoration(
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF224870),
+                          )
+                        ),
+                        filled: false,
+                        
+                        // Placeholder text
+                        labelText: 'Enter URL here...', 
+                        labelStyle: const TextStyle(
+                          color: Color(0xFF44CFCB),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      
+                    )
+                  ),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    color: const Color(0xFF44CFCB),
+                    onPressed: () => {log("button pressed")}
+                  ),
+                 ]
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  "Download List",
+                  style: TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.normal,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  decoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF224870),
-                      )
-                    ),
-                    filled: false,
-                    
-                    // Placeholder text
-                    labelText: 'Enter URL here...', 
-                    labelStyle: const TextStyle(
-                      color: Color(0xFF44CFCB),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  
-                )
-              ),
-              const SizedBox(width: 12),
-              IconButton(
-                icon: const Icon(Icons.search),
-                color: const Color(0xFF44CFCB),
-                onPressed: () => {print("button pressed")}
-              )
-             ]
+                ),
+                const DownloadListView(),
+              ],
             ),
           ),
         )
