@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 
 import 'package:flutter/material.dart';
 import 'package:youtube_downloader/src/ui_components/download_list.dart';
@@ -17,6 +18,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? sourceUrl;
   final TextEditingController _sourceUrlController = TextEditingController();
+  final DownloadListView _downloadListView = const DownloadListView();
 
   retrieveDownloadInfo() {
     setState(() {
@@ -88,7 +90,10 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     icon: const Icon(Icons.search),
                     color: const Color(0xFF44CFCB),
-                    onPressed: () => {log("button pressed")}
+                    onPressed: () {
+                      log("URL: ${_sourceUrlController.text}");
+                      
+                    }
                   ),
                  ]
                 ),
@@ -101,7 +106,7 @@ class _HomePageState extends State<HomePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const DownloadListView(),
+                _downloadListView,
               ],
             ),
           ),

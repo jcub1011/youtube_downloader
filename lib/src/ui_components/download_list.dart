@@ -35,6 +35,11 @@ class DownloadListItem {
     }
   }
 
+  DownloadListItem.fromVideo(Video video)
+      : _url = video.url,
+        _title = video.title,
+        isSelected = true;
+
   void getVideo(String link) {
     YouTube.instance.videos.get(url).then(
       (Video video) {
@@ -47,7 +52,7 @@ class DownloadListItem {
       },
       onError: (error) {
         log("Error retrieving video title: $error");
-        _title = "Error retrieving video title";
+        _title = "Error retrieving video title.";
         if (_setStateCallback != null) {
           _setStateCallback!(() {/** Video title updated. */});
         }
@@ -64,11 +69,32 @@ class DownloadListItem {
 }
 
 class _DownloadListViewState extends State<DownloadListView> {
-  Map<String, DownloadListItem> downloadList = {
+  Map<String, DownloadListItem> downloadList = {/*
     "Invalid Test URL": DownloadListItem("Invalid Test URL"),
     "https://music.youtube.com/watch?v=ClyVKnfBIO8&si=Cu5ISm-jRwlx8oO3": DownloadListItem("https://music.youtube.com/watch?v=ClyVKnfBIO8&si=Cu5ISm-jRwlx8oO3"),
-    "https://music.youtube.com/watch?v=mWl3_d3IsXg&si=-wVgfcxrQJhSguGJ": DownloadListItem("https://music.youtube.com/watch?v=mWl3_d3IsXg&si=-wVgfcxrQJhSguGJ"),
+    "https://music.youtube.com/watch?v=mWl3_d3IsXg&si=-wVgfcxrQJhSguGJ": DownloadListItem("https://music.youtube.com/watch?v=mWl3_d3IsXg&si=-wVgfcxrQJhSguGJ"),*/
   };
+
+  void setDownloadList(List<String> urls) {
+    setState(() {
+      downloadList = {};
+      for (String url in urls) {
+        downloadList[url] = DownloadListItem(url, setState);
+      }
+    });
+  }
+
+  void setDownloadListFromPlaylist(String playlistUrl) {
+    setState(() {
+      downloadList = {};
+    });
+
+    YouTube.instance.playlists.getVideos(playlistUrl).forEach((video) {
+      setState(() {
+        downloadList[video.url] = DownloadListItem.fromVideo(video);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
