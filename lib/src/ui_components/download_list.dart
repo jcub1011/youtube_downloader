@@ -1,14 +1,50 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:youtube_downloader/main.dart';
 import 'package:youtube_downloader/src/entities/download_request.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-class DownloadListView extends StatefulWidget {
+class DownloadListView extends ConsumerWidget {
   const DownloadListView({super.key});
 
   @override
-  State<DownloadListView> createState() => _DownloadListViewState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    var downloadList = ref.watch(downloadListProvider);
+
+    return Expanded(
+      child: ListView(
+        children: downloadList.map((ImmutableDownloadListItem item) {
+          return CheckboxListTile(
+            title: DefaultTextStyle(
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+              ),
+              child: Text(item.title),
+            ),
+            value: item.isSelected,
+            onChanged: (bool? value) {
+              ref.read(downloadListProvider.notifier).toggleDownloadItemSelection(item);
+              log("Item ${item.title} is now ${item.isSelected ? "selected" : "unselected"}");
+            },
+          );
+        }).toList()
+      ),
+    );
+  }
+}
+
+@immutable
+class ImmutableDownloadListItem {
+  final String url;
+  final String title;
+  final Video? video;
+  final bool isSelected;
+
+  const ImmutableDownloadListItem(this.url, this.title, {this.video, this.isSelected = true});
 }
 
 class DownloadListItem {
@@ -65,64 +101,5 @@ class DownloadListItem {
   String get title => _title;
   set setStateCallback(void Function(void Function())? callback) {
     _setStateCallback = callback;
-  }
-}
-
-class _DownloadListViewState extends State<DownloadListView> {
-  Map<String, DownloadListItem> downloadList = {/*
-    "Invalid Test URL": DownloadListItem("Invalid Test URL"),
-    "https://music.youtube.com/watch?v=ClyVKnfBIO8&si=Cu5ISm-jRwlx8oO3": DownloadListItem("https://music.youtube.com/watch?v=ClyVKnfBIO8&si=Cu5ISm-jRwlx8oO3"),
-    "https://music.youtube.com/watch?v=mWl3_d3IsXg&si=-wVgfcxrQJhSguGJ": DownloadListItem("https://music.youtube.com/watch?v=mWl3_d3IsXg&si=-wVgfcxrQJhSguGJ"),*/
-  };
-
-  void setDownloadList(List<String> urls) {
-    setState(() {
-      downloadList = {};
-      for (String url in urls) {
-        downloadList[url] = DownloadListItem(url, setState);
-      }
-    });
-  }
-
-  void setDownloadListFromPlaylist(String playlistUrl) {
-    setState(() {
-      downloadList = {};
-    });
-
-    YouTube.instance.playlists.getVideos(playlistUrl).forEach((video) {
-      setState(() {
-        downloadList[video.url] = DownloadListItem.fromVideo(video);
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView(
-        children: downloadList.keys.map((String key) {
-          downloadList[key]!.setStateCallback = setState;
-          
-          return CheckboxListTile(
-            title: DefaultTextStyle(
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-              ),
-              child: Text(downloadList[key]!.title),
-            ),
-            value: downloadList[key]!.isSelected,
-            onChanged: (bool? value) {
-              setState(() {
-                DownloadListItem item = downloadList[key]!;
-                downloadList[key]!.isSelected = !item.isSelected;
-                log("Item ${item.title} is now ${item.isSelected ? "selected" : "unselected"}");
-              });
-            },
-          );
-        }).toList()
-      ),
-    );
   }
 }
