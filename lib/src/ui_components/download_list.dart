@@ -13,26 +13,28 @@ class DownloadListView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var downloadList = ref.watch(downloadListProvider);
 
-    return Expanded(
-      child: ListView(
-        children: downloadList.map((ImmutableDownloadListItem item) {
-          return CheckboxListTile(
-            title: DefaultTextStyle(
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-              ),
-              child: Text(item.title),
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      itemCount: downloadList.length,
+      itemBuilder: (context, index) {
+        var item = downloadList[index];
+        return CheckboxListTile(
+          controlAffinity: ListTileControlAffinity.leading,
+          title: DefaultTextStyle(
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
             ),
-            value: item.isSelected,
-            onChanged: (bool? value) {
-              ref.read(downloadListProvider.notifier).toggleDownloadItemSelection(item);
-              log("Item ${item.title} is now ${item.isSelected ? "selected" : "unselected"}");
-            },
-          );
-        }).toList()
-      ),
+            child: Text(item.title),
+          ),
+          value: item.isSelected,
+          onChanged: (bool? value) {
+            ref.read(downloadListProvider.notifier).toggleDownloadItemSelection(item);
+            log("Item ${item.title} is now ${item.isSelected ? "selected" : "unselected"}");
+          },
+        );
+      },
     );
   }
 }
@@ -77,7 +79,8 @@ class DownloadListItem {
         isSelected = true;
 
   void getVideo(String link) {
-    YouTube.instance.videos.get(url).then(
+      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
+      wrapper.instance.videos.get(url).then(
       (Video video) {
         _video = video;
         _title = video.title;

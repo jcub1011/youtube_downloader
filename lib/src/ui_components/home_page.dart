@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/main.dart';
 import 'package:youtube_downloader/src/ui_components/download_list.dart';
+import 'package:youtube_downloader/src/ui_components/download_overview_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -20,6 +21,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   String? sourceUrl;
   final TextEditingController _sourceUrlController = TextEditingController();
   final DownloadListView _downloadListView = const DownloadListView();
+  final DownloadOverviewPage _downloadOverviewPage = const DownloadOverviewPage();
 
   retrieveDownloadInfo() {
     setState(() {
@@ -29,90 +31,100 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF122C34)
+    return Scaffold(
+      backgroundColor: const Color(0xFF122C34),
+      appBar: AppBar(
+        title: const Text(
+          "YouTube Downloader",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 25,
+          ),
+        ),
+        
+        // Centers the app bar title
+        centerTitle: true, 
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
       ),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "YouTube Downloader",
+      body: Column(
+        children: [
+          UrlEntrySpot(sourceUrlController: _sourceUrlController),
+          const SizedBox(height: 24),
+          const Text(
+            "Download List",
             style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              fontSize: 25,
             ),
           ),
-          
-          // Centers the app bar title
-          centerTitle: true, 
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-        ),
-        body: Center(
-          child: Container(
-            constraints: const BoxConstraints(
-              maxWidth: 500,
+          TextButton(
+            onPressed: () {
+              ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider));
+            },
+            child: const Text(
+              "Download Selected",
+              style: TextStyle(
+                color: Color(0xFF44CFCB),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            
-            padding: const EdgeInsets.all(10),
-            child: Column(
+          ),
+          Expanded(
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                      controller: _sourceUrlController,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.normal,
-                      ),
-                      decoration: InputDecoration(
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF224870),
-                          )
-                        ),
-                        filled: false,
-                        
-                        // Placeholder text
-                        labelText: 'Enter URL here...', 
-                        labelStyle: const TextStyle(
-                          color: Color(0xFF44CFCB),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      
-                    )
-                  ),
-                  const SizedBox(width: 12),
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    color: const Color(0xFF44CFCB),
-                    onPressed: () {
-                      log("URL: ${_sourceUrlController.text}");
-                      ref.read(downloadListProvider.notifier)
-                        .setDownloadSource(_sourceUrlController.text);
-                    }
-                  ),
-                 ]
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  "Download List",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                _downloadListView,
+                Expanded(child: _downloadListView),
+                Expanded(child: _downloadOverviewPage)
               ],
             ),
+          )
+          ],
+        ),
+      );
+  }
+}
+
+class UrlEntrySpot extends ConsumerWidget {
+  const UrlEntrySpot({super.key, required this.sourceUrlController});
+  final TextEditingController sourceUrlController;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: TextFormField(
+              controller: sourceUrlController,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.normal,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Enter URL here...', 
+                labelStyle: TextStyle(
+                  color: Color(0xFF44CFCB),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
-        )
+          const SizedBox(width: 12),
+          IconButton(
+            icon: const Icon(Icons.search),
+            color: const Color(0xFF44CFCB),
+            onPressed: () {
+              log("URL: ${sourceUrlController.text}");
+              ref.read(downloadListProvider.notifier)
+                .setDownloadSource(sourceUrlController.text);
+            }
+          ),
+        ],
       ),
     );
   }

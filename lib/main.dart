@@ -1,12 +1,15 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import 'src/entities/download_request.dart';
 import 'src/ui_components/download_list.dart';
+import 'src/ui_components/download_overview_page.dart';
 import 'src/ui_components/my_app.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 //import 'src/settings/settings_controller.dart';
 //import 'src/settings/settings_service.dart';
 
@@ -49,7 +52,8 @@ class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadList
     clearDownloadItems();
 
     try {
-      YouTube.instance.videos.get(videoLink).then(
+      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
+      wrapper.instance.videos.get(videoLink).then(
         (Video video) {
           _addDownloadItem(videoLink, video.title, true, video);
           log("Video title: ${video.title}");
@@ -70,9 +74,10 @@ class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadList
     clearDownloadItems();
 
     try {
-      YouTube.instance.playlists.get(playlistLink).then(
+      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
+      wrapper.instance.playlists.get(playlistLink).then(
         (Playlist playlist) {
-          YouTube.instance.playlists.getVideos(playlistLink).forEach((video) {
+          wrapper.instance.playlists.getVideos(playlistLink).forEach((video) {
             _addDownloadItem(video.url, video.title, true, video);
           });
         },
@@ -126,6 +131,84 @@ class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadList
   }
 }
 
+class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>> {
+  DownloadProgressProvider(super.state);
+
+  void setDownloadProgressTargets(List<ImmutableDownloadListItem> items) {
+    state = [];
+
+    for (var item in items) {
+      if (item.isSelected && item.video != null) {
+        _beginDownload(item);
+      }
+    }
+  }
+
+  void _beginDownload(ImmutableDownloadListItem item) async {
+    var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 0.0);
+    state = [...state, progressItem];
+    int index = state.length - 1;
+    log("Download started for: ${item.title}");
+
+    try {
+      // Add to queue of download requests rather than handle here. 
+      //The wrapper gets discarded automatically before manifest process is finished.
+      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
+      wrapper.instance.videos.streamsClient.getManifest(item.video!.id).then((manifest) {
+        var audioInfo = manifest.audioOnly.withHighestBitrate();
+        log("Highest Audio Bitrate: ${audioInfo.bitrate}");
+        log("Audio URL: ${audioInfo.url}");
+
+        int total, received = 0;
+        int previousPercent = 0;
+        List<int> bytes = [];
+
+        http.Client().send(http.Request("GET", audioInfo.url)).then((response) {
+          total = response.contentLength ?? 0;
+
+          response.stream.listen((value) {
+            received += value.length;
+            bytes.addAll(value);
+            
+            double progress = received / total;
+            int currentPercent = (progress * 100).toInt();
+            currentPercent = currentPercent - currentPercent % 5; // Round down to nearest 5%.
+
+            if (currentPercent != previousPercent) {
+              log("Progress: $currentPercent%");
+              previousPercent = currentPercent;
+              state = [
+                ...state.sublist(0, index),
+                DownloadProgressItem(item.url, item.title, item.video!, progress),
+                ...state.sublist(index + 1),
+              ];
+            }
+          });
+        });
+      }, 
+      onError: (e) {
+        log("Error retrieving video manifest: $e");
+        return null;
+      });
+    } catch (e) {
+      log("Error downloading ${item.url}: $e");
+      return null;
+    }
+  }
+
+  String _getPath(Video video, StreamInfo streamInfo) {
+    String folder = Directory.current.path;
+    log("Current folder: $folder");
+    String fileName = video.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_') + streamInfo.container.name;
+    String filePath = "$folder/$fileName";
+    return filePath;
+  }
+}
+
 final downloadListProvider = StateNotifierProvider<DownloadListItemsProvider, List<ImmutableDownloadListItem>>((ref) {
   return DownloadListItemsProvider([]);
+});
+
+final downloadProgressProvider = StateNotifierProvider<DownloadProgressProvider, List<DownloadProgressItem>>((ref) {
+  return DownloadProgressProvider([]);
 });
