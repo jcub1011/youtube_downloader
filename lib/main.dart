@@ -99,6 +99,19 @@ class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadList
     state = [...state, ImmutableDownloadListItem(url, title, video: video, isSelected: isSelected)];
   }
 
+  void setAllDownloadItemSelections(bool isSelected) {
+    if (state.isEmpty) return;
+
+    state = state.map((item) {
+      return ImmutableDownloadListItem(
+        item.url,
+        item.title,
+        video: item.video,
+        isSelected: isSelected,
+      );
+    }).toList();
+  }
+
   void toggleDownloadItemSelection(ImmutableDownloadListItem item) {
     final index = state.indexOf(item);
     if (index != -1) {
@@ -158,8 +171,18 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
       YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
       wrapper.instance.videos.streamsClient.getManifest(item.video!.id).then((manifest) {
         var audioInfo = manifest.audioOnly.withHighestBitrate();
-        log("Highest Audio Bitrate: ${audioInfo.bitrate}");
-        log("Audio URL: ${audioInfo.url}");
+        for (int i = 0; i < manifest.audioOnly.length; i++) {
+          log("Audio ${i + 1}: ${manifest.audioOnly[i].bitrate} ${manifest.audioOnly[i].codec.mimeType} ${manifest.audioOnly[i].audioCodec}");
+        }
+
+        var opusAudio = manifest.audioOnly.sortByBitrate().lastWhere((audio) {
+          return audio.codec.mimeType == "audio/webm; codecs=\"opus\"";
+        }, orElse: () {
+          log("No Opus audio found, using highest bitrate.");
+          return audioInfo;
+        });
+        log("Highest Audio Bitrate: ${opusAudio.bitrate}");
+        log("Audio URL: ${opusAudio.url}");
 
         int total = 0;
         int received = 0;
@@ -167,7 +190,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
 
         videoDownloader.addToQueue(VideoDownloadRequestArgs
         (
-          url: audioInfo.url,
+          url: opusAudio.url,
           onStart: (response) {
             total = response.contentLength ?? 0;
           },
@@ -192,7 +215,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             log("Network download completed for: ${item.title}");
 
             // Assume mp3 on failiure.
-            String audioExtension = extensionFromMime(audioInfo.codec.mimeType) ?? 'mp3';
+            String audioExtension = extensionFromMime(opusAudio.codec.mimeType) ?? 'mp3';
             var file = File('$downloadPath/${item.video!.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')}.$audioExtension');
             file.writeAsBytes(allData).then((file) {
               log("File saved to: ${file.path}");
@@ -212,6 +235,8 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
       }, 
       onError: (e) {
         log("Error retrieving video manifest: $e");
+        var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 1);
+        state = [...state.sublist(0, index), progressItem, ...state.sublist(index + 1)];
         return null;
       });
     } catch (e) {

@@ -62,18 +62,36 @@ class _HomePageState extends ConsumerState<HomePage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          TextButton(
-            onPressed: () {
-              ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
-            },
-            child: const Text(
-              "Download Selected",
-              style: TextStyle(
-                color: Color(0xFF44CFCB),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          Row(
+            children: [
+              TextButton(
+                child: const Text('Select All'),
+                onPressed: () {  
+                  ref.read(downloadListProvider.notifier).setAllDownloadItemSelections(true);
+                  log("All items selected.");
+                }
               ),
-            ),
+              TextButton(
+                child: const Text('Deselect All'),
+                onPressed: () {  
+                  ref.read(downloadListProvider.notifier).setAllDownloadItemSelections(false);
+                  log("All items deselected.");
+                }
+              ),
+              TextButton(
+                onPressed: () {
+                  ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
+                },
+                child: const Text(
+                  "Download Selected",
+                  style: TextStyle(
+                    color: Color(0xFF44CFCB),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
           Expanded(
             child: Row(
