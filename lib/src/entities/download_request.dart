@@ -10,7 +10,7 @@ class DownloadRequestArgs {
 
 class YTExplodeWrapper {
   static final Finalizer<YoutubeExplode> _finalizer = Finalizer<YoutubeExplode>((instance) {
-    instance.close();
+    //instance.close();
     log("YoutubeExplode instance closed.");
   });
 

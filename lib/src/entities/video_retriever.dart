@@ -1,39 +1,39 @@
 import 'dart:collection';
-import 'dart:io';
+import 'dart:developer';
+import 'package:http/http.dart' as http;
 
-import 'package:http/http.dart';
-import 'package:http/io_client.dart';
+class VideoDownloadRequestArgs {
+  final Uri url;
+  /// Called when request is started.
+  final Function(http.StreamedResponse)? onStart;
+  /// List of bytes received for the current chunk.
+  final Function(List<int>)? onData;
+  /// List of all bytes received.
+  final Function(List<int>)? onDone;
+  /// Called when an error occurs.
+  final Function(dynamic)? onError;
 
-class DownloadRequestArgs {
-  final String url;
-  final Function? onStart;
-  final Function? onData;
-  final Function? onDone;
-  final Function? onError;
-  final bool? cancelOnError;
-
-  DownloadRequestArgs({
+  VideoDownloadRequestArgs({
     required this.url,
     this.onStart,
     this.onData,
     this.onDone,
     this.onError,
-    this.cancelOnError,
   });
 }
 
 class VideoDownloader {
   int _maxConcurrentDownloads; 
   /// Queue of videos to download.
-  final Queue<DownloadRequestArgs> _queue; 
-  final Queue<Client> _clientPool = Queue<Client>();
-  final Queue<Client> _activeClients = Queue<Client>();
+  final Queue<VideoDownloadRequestArgs> _queue; 
+  final Queue<http.Client> _clientPool = Queue<http.Client>();
+  final Queue<http.Client> _activeClients = Queue<http.Client>();
 
   VideoDownloader(this._maxConcurrentDownloads) : 
-  _queue = Queue<DownloadRequestArgs>() 
+  _queue = Queue<VideoDownloadRequestArgs>() 
   {
     while (_clientPool.length + _activeClients.length < _maxConcurrentDownloads) {
-      _clientPool.add(Client());
+      _clientPool.add(http.Client());
     }
   }
 
@@ -41,7 +41,7 @@ class VideoDownloader {
     _maxConcurrentDownloads = max;
     
     while (_clientPool.length + _activeClients.length < _maxConcurrentDownloads) {
-      _clientPool.add(Client());
+      _clientPool.add(http.Client());
     }
 
     while (_clientPool.length + _activeClients.length > _maxConcurrentDownloads) {
@@ -53,10 +53,76 @@ class VideoDownloader {
     }
   }
 
-  void addToQueue(DownloadRequestArgs args) {
+  void addToQueue(VideoDownloadRequestArgs args) {
     _queue.add(args);
 
-    // Start download process if not already running.
+    // Start download process.
+    startDownloads();
+  }
+
+  void startDownloads() {
+    while (_clientPool.isNotEmpty && _queue.isNotEmpty) {
+      var request = _queue.removeFirst();
+      var client = _clientPool.removeFirst();
+      _activeClients.add(client);
+
+      List<int> bytes = [];
+
+      client.send(http.Request('GET', request.url)).then((response) {
+        if (request.onStart != null) {
+          request.onStart!(response);
+        }
+
+        response.stream.listen((value) {
+          bytes.addAll(value);
+
+          if (request.onData != null) {
+            request.onData!(value);
+          }
+        },
+        onDone:() {
+          _activeClients.remove(client);
+          _clientPool.add(client);
+
+          startDownloads();
+
+          if (request.onDone != null) {
+            request.onDone!(bytes);
+          }
+        },
+        cancelOnError: true,
+        onError: (error) {
+          log("Error downloading video: $error");
+
+          // Replace client.
+          _activeClients.remove(client);
+          client.close();
+          _clientPool.add(http.Client());
+
+          // Begin new downloads.
+          startDownloads();
+
+          if (request.onError != null) {
+            request.onError!(error);
+          }
+        });
+      },
+      onError: (error) {
+        log("Error downloading video: $error");
+
+        // Replace client.
+        _activeClients.remove(client);
+        client.close();
+        _clientPool.add(http.Client());
+
+        // Begin new downloads.
+        startDownloads();
+
+        if (request.onError != null) {
+          request.onError!(error);
+        }
+      });
+    }
   }
 
   void dispose() {

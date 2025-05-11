@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:youtube_downloader/src/entities/video_retriever.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import 'src/entities/download_request.dart';
@@ -159,17 +160,20 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
         log("Highest Audio Bitrate: ${audioInfo.bitrate}");
         log("Audio URL: ${audioInfo.url}");
 
-        int total, received = 0;
+        int total = 0;
+        int received = 0;
         int previousPercent = 0;
         List<int> bytes = [];
 
-        http.Client().send(http.Request("GET", audioInfo.url)).then((response) {
-          total = response.contentLength ?? 0;
+        videoDownloader.addToQueue(VideoDownloadRequestArgs
+        (
+          url: audioInfo.url,
+          onStart: (response) {
+            total = response.contentLength ?? 0;
+          },
+          onData: (data) {
+            received += data.length;
 
-          response.stream.listen((value) {
-            received += value.length;
-            bytes.addAll(value);
-            
             double progress = received / total;
             int currentPercent = (progress * 100).toInt();
             currentPercent = currentPercent - currentPercent % 5; // Round down to nearest 5%.
@@ -183,8 +187,20 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                 ...state.sublist(index + 1),
               ];
             }
-          });
-        });
+          },
+          onDone: (allData) {
+            bytes = allData;
+            log("Download completed for: ${item.title}");
+          },
+          onError: (error) {
+            log("Error downloading video: $error");
+            state = [
+              ...state.sublist(0, index),
+              DownloadProgressItem(item.url, item.title, item.video!, 0.0),
+              ...state.sublist(index + 1),
+            ];
+          }
+        ));
       }, 
       onError: (e) {
         log("Error retrieving video manifest: $e");
@@ -212,3 +228,5 @@ final downloadListProvider = StateNotifierProvider<DownloadListItemsProvider, Li
 final downloadProgressProvider = StateNotifierProvider<DownloadProgressProvider, List<DownloadProgressItem>>((ref) {
   return DownloadProgressProvider([]);
 });
+
+final videoDownloader = VideoDownloader(2);
