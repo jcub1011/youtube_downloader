@@ -10,8 +10,10 @@ environment:
   sdk: ^3.5.3
 
 dependencies:
+  filepicker_windows: ^2.1.4
   flutter:
     sdk: flutter
+  flutter_file_dialog: ^3.0.2
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^2.6.1

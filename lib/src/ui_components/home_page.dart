@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/main.dart';
 import 'package:youtube_downloader/src/ui_components/download_list.dart';
 import 'package:youtube_downloader/src/ui_components/download_overview_page.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+import 'package:filepicker_windows/filepicker_windows.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -49,6 +51,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       body: Column(
         children: [
+          const DownloadLocationSelector(),
           UrlEntrySpot(sourceUrlController: _sourceUrlController),
           const SizedBox(height: 24),
           const Text(
@@ -126,6 +129,35 @@ class UrlEntrySpot extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class DownloadLocationSelector extends ConsumerWidget {
+  const DownloadLocationSelector({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      children: [
+        TextButton(
+          child: const Text('Select Download Location'),
+          onPressed: () {
+            var directorySelector = DirectoryPicker()..title = "Select Download Location";
+            var directory = directorySelector.getDirectory();
+        
+            if (directory == null) {
+              log("No directory selected");
+              return;
+            }
+        
+            ref.read(downloadLocationProvider.notifier).state = directory.path;
+            log("Download location set to: ${directory.path}");
+          },
+        ),
+        const SizedBox(width: 12),
+        Text(ref.watch(downloadLocationProvider)),
+      ],
     );
   }
 }

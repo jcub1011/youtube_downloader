@@ -230,3 +230,7 @@ final downloadProgressProvider = StateNotifierProvider<DownloadProgressProvider,
 });
 
 final videoDownloader = VideoDownloader(2);
+
+final downloadLocationProvider = StateProvider<String>((ref) {
+  return Directory.current.path;
+});
