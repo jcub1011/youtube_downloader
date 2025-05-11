@@ -64,7 +64,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           TextButton(
             onPressed: () {
-              ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider));
+              ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
             },
             child: const Text(
               "Download Selected",

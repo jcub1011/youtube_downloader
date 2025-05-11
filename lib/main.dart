@@ -11,6 +11,7 @@ import 'src/ui_components/download_overview_page.dart';
 import 'src/ui_components/my_app.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
 //import 'src/settings/settings_controller.dart';
 //import 'src/settings/settings_service.dart';
 
@@ -135,17 +136,17 @@ class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadList
 class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>> {
   DownloadProgressProvider(super.state);
 
-  void setDownloadProgressTargets(List<ImmutableDownloadListItem> items) {
+  void setDownloadProgressTargets(List<ImmutableDownloadListItem> items, String downloadLocation) {
     state = [];
 
     for (var item in items) {
       if (item.isSelected && item.video != null) {
-        _beginDownload(item);
+        _beginDownload(item, downloadLocation);
       }
     }
   }
 
-  void _beginDownload(ImmutableDownloadListItem item) async {
+  void _beginDownload(ImmutableDownloadListItem item, String downloadPath) async {
     var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 0.0);
     state = [...state, progressItem];
     int index = state.length - 1;
@@ -163,7 +164,6 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
         int total = 0;
         int received = 0;
         int previousPercent = 0;
-        List<int> bytes = [];
 
         videoDownloader.addToQueue(VideoDownloadRequestArgs
         (
@@ -189,8 +189,16 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             }
           },
           onDone: (allData) {
-            bytes = allData;
-            log("Download completed for: ${item.title}");
+            log("Network download completed for: ${item.title}");
+
+            // Assume mp3 on failiure.
+            String audioExtension = extensionFromMime(audioInfo.codec.mimeType) ?? 'mp3';
+            var file = File('$downloadPath/${item.video!.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')}.$audioExtension');
+            file.writeAsBytes(allData).then((file) {
+              log("File saved to: ${file.path}");
+            }).catchError((error) {
+              log("Error saving file: $error");
+            });
           },
           onError: (error) {
             log("Error downloading video: $error");
@@ -212,13 +220,13 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
     }
   }
 
-  String _getPath(Video video, StreamInfo streamInfo) {
-    String folder = Directory.current.path;
-    log("Current folder: $folder");
-    String fileName = video.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_') + streamInfo.container.name;
-    String filePath = "$folder/$fileName";
-    return filePath;
-  }
+  // String _getPath(Video video, StreamInfo streamInfo) {
+  //   String folder = downloadLocationProvider.read(node);
+  //   log("Current folder: $folder");
+  //   String fileName = video.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_') + streamInfo.container.name;
+  //   String filePath = "$folder/$fileName";
+  //   return filePath;
+  // }
 }
 
 final downloadListProvider = StateNotifierProvider<DownloadListItemsProvider, List<ImmutableDownloadListItem>>((ref) {
