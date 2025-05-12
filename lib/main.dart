@@ -175,13 +175,15 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
           log("Audio ${i + 1}: ${manifest.audioOnly[i].bitrate} ${manifest.audioOnly[i].codec.mimeType} ${manifest.audioOnly[i].audioCodec}");
         }
 
-        var opusAudio = manifest.audioOnly.sortByBitrate().lastWhere((audio) {
-          return audio.codec.mimeType == "audio/webm; codecs=\"opus\"";
+        String audioExtension = 'opus';
+        var opusAudio = manifest.audioOnly.sortByBitrate().firstWhere((audio) {
+          return audio.audioCodec.toLowerCase() == "opus";
         }, orElse: () {
           log("No Opus audio found, using highest bitrate.");
+          audioExtension = extensionFromMime(audioInfo.codec.mimeType) ?? 'mp3';
           return audioInfo;
         });
-        log("Highest Audio Bitrate: ${opusAudio.bitrate}");
+        log("Selected Audio: ${opusAudio.bitrate} ${opusAudio.codec.mimeType} ${opusAudio.audioCodec}");
         log("Audio URL: ${opusAudio.url}");
 
         int total = 0;
@@ -214,8 +216,6 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
           onDone: (allData) {
             log("Network download completed for: ${item.title}");
 
-            // Assume mp3 on failiure.
-            String audioExtension = extensionFromMime(opusAudio.codec.mimeType) ?? 'mp3';
             var file = File('$downloadPath/${item.video!.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')}.$audioExtension');
             file.writeAsBytes(allData).then((file) {
               log("File saved to: ${file.path}");
@@ -244,14 +244,6 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
       return null;
     }
   }
-
-  // String _getPath(Video video, StreamInfo streamInfo) {
-  //   String folder = downloadLocationProvider.read(node);
-  //   log("Current folder: $folder");
-  //   String fileName = video.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_') + streamInfo.container.name;
-  //   String filePath = "$folder/$fileName";
-  //   return filePath;
-  // }
 }
 
 final downloadListProvider = StateNotifierProvider<DownloadListItemsProvider, List<ImmutableDownloadListItem>>((ref) {
@@ -262,7 +254,7 @@ final downloadProgressProvider = StateNotifierProvider<DownloadProgressProvider,
   return DownloadProgressProvider([]);
 });
 
-final videoDownloader = VideoDownloader(2);
+final videoDownloader = VideoDownloader(5);
 
 final downloadLocationProvider = StateProvider<String>((ref) {
   return Directory.current.path;

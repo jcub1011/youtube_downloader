@@ -28,21 +28,3 @@ class YTExplodeWrapper {
     log("YoutubeExplode instance closed and detached.");
   }
 }
-
-/*
-// Singleton class for YoutubeExplode.
-class YouTube {
-  static final YTExplodeWrapper _instance = YTExplodeWrapper(YoutubeExplode());
-
-  static YoutubeExplode get instance {
-    return _instance.instance;
-  }
-}
-
-/// Holds relevant information for a download request.
-class DownloadRequest {
-  final Video video;
-  final DownloadRequestArgs downloadArgs;
-
-  DownloadRequest(this.video, this.downloadArgs);
-}*/
