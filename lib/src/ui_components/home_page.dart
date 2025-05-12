@@ -93,14 +93,19 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ],
           ),
+          const SizedBox(height: 12),
           Expanded(
             child: Row(
               children: [
+                const SizedBox(width: 12),
                 Expanded(child: _downloadListView),
-                Expanded(child: _downloadOverviewPage)
+                const SizedBox(width: 12),
+                Expanded(child: _downloadOverviewPage),
+                const SizedBox(width: 12)
               ],
             ),
-          )
+          ),
+          const SizedBox(height: 12)
           ],
         ),
       );
