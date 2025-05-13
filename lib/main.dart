@@ -258,3 +258,11 @@ final videoDownloader = VideoDownloader(5);
 final downloadLocationProvider = StateProvider<String>((ref) {
   return Directory.current.path;
 });
+
+final downloadSourceProvider = StateProvider<String>((ref) {
+  return "";
+});
+
+final errorListProvider = StateProvider<List<String>>((ref) {
+  return List<String>.empty();
+});

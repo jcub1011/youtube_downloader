@@ -183,3 +183,229 @@ class DownloadLocationSelector extends ConsumerWidget {
     );
   }
 }
+
+class ConfigurationPage extends ConsumerWidget {
+  const ConfigurationPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          DownloadLocationSelector(),
+          DownloadLinkSelector(),
+        ],
+      ),
+    );
+  }
+}
+
+class DownloadLinkSelector extends ConsumerStatefulWidget {
+  const DownloadLinkSelector({super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _DownloadLinkSelectorState();
+}
+
+class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
+  @override
+  Widget build(BuildContext context) {
+    var sourceUrlController = TextEditingController(text: ref.read(downloadSourceProvider));
+
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: TextFormField(
+              controller: sourceUrlController,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.normal,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Enter URL here...', 
+                labelStyle: TextStyle(
+                  color: Color(0xFF44CFCB),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          IconButton(
+            icon: const Icon(Icons.search),
+            color: const Color(0xFF44CFCB),
+            onPressed: () {
+              log("URL: ${sourceUrlController.text}");
+
+              if (sourceUrlController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      showCloseIcon: true,
+                      content: Text("Enter a link first.")
+                    )
+                  );
+              }
+              else {
+                ref.read(downloadListProvider.notifier)
+                  .setDownloadSource(sourceUrlController.text);
+                ref.read(downloadSourceProvider.notifier).state = sourceUrlController.text;
+
+                DefaultTabController.of(context).animateTo(1);
+              }
+            }
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DownloadSelectionView extends ConsumerWidget {
+  const DownloadSelectionView({super.key});
+
+  String _getFormattedDuration(Duration duration) {
+    int minutes = duration.inMinutes;
+    int seconds = duration.inSeconds.remainder(60);
+    return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var downloadList = ref.watch(downloadListProvider);
+
+    if (downloadList.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(
+          child: Text(
+            "Loading videos. If loading is taking an unusual amount of time, make sure you have set the download url to a valid YouTube video or playlist link.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              TextButton(
+                child: const Row(
+                  children: [
+                    Icon(Icons.check_box, color: Color(0xFF44CFCB)),
+                    SizedBox(width: 8),
+                    Text(
+                      "Select All",
+                      style: TextStyle(
+                        color: Color(0xFF44CFCB),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  ref.read(downloadListProvider.notifier).setAllDownloadItemSelections(true);
+                  log("All items deselected.");
+                }
+              ),
+              TextButton(
+                child: const Row(
+                  children: [
+                    Icon(Icons.check_box_outline_blank, color: Color(0xFF44CFCB)),
+                    SizedBox(width: 8),
+                    Text(
+                      "Deselect All",
+                      style: TextStyle(
+                        color: Color(0xFF44CFCB),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  ref.read(downloadListProvider.notifier).setAllDownloadItemSelections(false);
+                  log("All items deselected.");
+                }
+              ),
+              TextButton(
+                child: const Row(
+                  children: [
+                    Icon(Icons.download, color: Color(0xFF44CFCB)),
+                    SizedBox(width: 8),
+                    Text(
+                      "Download Selected",
+                      style: TextStyle(
+                        color: Color(0xFF44CFCB),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  if (ref.read(downloadListProvider).where((element) => element.isSelected).isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        showCloseIcon: true,
+                        content: Text("No videos selected.")
+                      )
+                    );
+                  }
+                  else {
+                    ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
+                  }
+                }
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            scrollDirection: Axis.vertical,
+            itemCount: downloadList.length,
+            itemBuilder: (context, index) {
+              var item = downloadList[index];
+              return CheckboxListTile(
+                controlAffinity: ListTileControlAffinity.leading,
+                title: DefaultTextStyle(
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(item.title),
+                      Text(" ${item.video?.author} | ${_getFormattedDuration(item.video?.duration ?? const Duration(seconds: 0))}"),
+                    ],
+                  ),
+                ),
+                value: item.isSelected,
+                onChanged: (bool? value) {
+                  ref.read(downloadListProvider.notifier).toggleDownloadItemSelection(item);
+                  log("Item ${item.title} is now ${item.isSelected ? "selected" : "unselected"}");
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+

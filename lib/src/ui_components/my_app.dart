@@ -3,7 +3,7 @@ import 'package:youtube_downloader/src/ui_components/home_page.dart';
 
 class DownloaderApp extends StatelessWidget {
   const DownloaderApp({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,6 +28,14 @@ class DownloaderApp extends StatelessWidget {
                 Tab(text: "Errors"),
               ],
             ),
+          ),
+          body: const TabBarView(
+            children: [
+              ConfigurationPage(),
+              DownloadSelectionView(),
+              Center(child: Text("Download Progress")),
+              Center(child: Text("Errors")),
+            ],
           ),
         ),
       ),
