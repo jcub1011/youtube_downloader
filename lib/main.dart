@@ -10,7 +10,6 @@ import 'src/ui_components/download_list.dart';
 import 'src/ui_components/download_overview_page.dart';
 import 'src/ui_components/my_app.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 //import 'src/settings/settings_controller.dart';
 //import 'src/settings/settings_service.dart';

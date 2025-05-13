@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/main.dart';
 import 'package:youtube_downloader/src/ui_components/download_list.dart';
 import 'package:youtube_downloader/src/ui_components/download_overview_page.dart';
-import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:filepicker_windows/filepicker_windows.dart';
 
 class HomePage extends ConsumerStatefulWidget {
