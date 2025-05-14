@@ -216,34 +216,30 @@ class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
 
     return Padding(
       padding: const EdgeInsets.all(12),
-      child: Row(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
-            child: TextFormField(
-              onEditingComplete: () {
-                log("URL: ${sourceUrlController.text}");
-                PersistentAppSettings.saveDownloadLink(sourceUrlController.text);
-              },
-              controller: sourceUrlController,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.normal,
-              ),
-              decoration: const InputDecoration(
-                labelText: 'Enter URL here...', 
-                labelStyle: TextStyle(
-                  color: Color(0xFF44CFCB),
-                  fontWeight: FontWeight.bold,
-                ),
+          TextFormField(
+            onEditingComplete: () {
+              log("URL: ${sourceUrlController.text}");
+              PersistentAppSettings.saveDownloadLink(sourceUrlController.text);
+            },
+            controller: sourceUrlController,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.normal,
+            ),
+            decoration: const InputDecoration(
+              labelText: 'Enter URL here...', 
+              labelStyle: TextStyle(
+                color: Color(0xFF44CFCB),
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(Icons.search),
-            color: const Color(0xFF44CFCB),
+          const SizedBox(height: 12),
+          TextButton(
             onPressed: () {
               log("URL: ${sourceUrlController.text}");
 
@@ -263,7 +259,15 @@ class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
 
                 DefaultTabController.of(context).animateTo(1);
               }
-            }
+            },
+            child: const Text(
+              "Load Download List",
+              style: TextStyle(
+                color: Color(0xFF44CFCB),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
