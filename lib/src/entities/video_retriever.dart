@@ -64,38 +64,75 @@ class VideoDownloader {
   }
 
   void startDownloads() {
-    while (_clientPool.isNotEmpty && _queue.isNotEmpty) {
-      var request = _queue.removeFirst();
-      var client = _clientPool.removeFirst();
-      _activeClients.add(client);
+    try {
+      while (_clientPool.isNotEmpty && _queue.isNotEmpty) {
+        var request = _queue.removeFirst();
+        var client = _clientPool.removeFirst();
+        _activeClients.add(client);
 
-      List<int> bytes = [];
+        List<int> bytes = [];
 
-      client.send(http.Request('GET', request.url)).then((response) {
-        if (request.onStart != null) {
-          request.onStart!(response);
+        try {
+          client.send(http.Request('GET', request.url)).then((response) {
+            if (request.onStart != null) {
+              request.onStart!(response);
+            }
+
+            response.stream.listen((value) {
+              bytes.addAll(value);
+
+              if (request.onData != null) {
+                request.onData!(value);
+              }
+            },
+            onDone:() {
+              _activeClients.remove(client);
+              _clientPool.add(client);
+
+              startDownloads();
+
+              if (request.onDone != null) {
+                request.onDone!(bytes);
+              }
+            },
+            cancelOnError: true,
+            onError: (error) {
+              log("Error downloading video: $error");
+              VideoDownloader.errorEvent.broadcast(error.toString());
+
+              // Replace client.
+              _activeClients.remove(client);
+              client.close();
+              _clientPool.add(http.Client());
+
+              // Begin new downloads.
+              startDownloads();
+
+              if (request.onError != null) {
+                request.onError!(error);
+              }
+            });
+          },
+          onError: (error) {
+            log("Error downloading video: $error");
+            VideoDownloader.errorEvent.broadcast(error.toString());
+
+            // Replace client.
+            _activeClients.remove(client);
+            client.close();
+            _clientPool.add(http.Client());
+
+            // Begin new downloads.
+            startDownloads();
+
+            if (request.onError != null) {
+              request.onError!(error);
+            }
+          });
         }
-
-        response.stream.listen((value) {
-          bytes.addAll(value);
-
-          if (request.onData != null) {
-            request.onData!(value);
-          }
-        },
-        onDone:() {
-          _activeClients.remove(client);
-          _clientPool.add(client);
-
-          startDownloads();
-
-          if (request.onDone != null) {
-            request.onDone!(bytes);
-          }
-        },
-        cancelOnError: true,
-        onError: (error) {
+        catch (error) {
           log("Error downloading video: $error");
+          VideoDownloader.errorEvent.broadcast(error.toString());
 
           // Replace client.
           _activeClients.remove(client);
@@ -108,23 +145,16 @@ class VideoDownloader {
           if (request.onError != null) {
             request.onError!(error);
           }
-        });
-      },
-      onError: (error) {
-        log("Error downloading video: $error");
-
-        // Replace client.
-        _activeClients.remove(client);
-        client.close();
-        _clientPool.add(http.Client());
-
-        // Begin new downloads.
-        startDownloads();
-
-        if (request.onError != null) {
-          request.onError!(error);
         }
-      });
+      }
+    }
+    catch (error) {
+      log("Error starting downloads: $error");
+      VideoDownloader.errorEvent.broadcast(error.toString());
+      log("Unable to recover from error. Cancelling all downloads.");
+      VideoDownloader.errorEvent.broadcast("Unable to recover from error. Cancelling all downloads.");
+      log("Please restart the application.");
+      VideoDownloader.errorEvent.broadcast("Please restart the application.");
     }
   }
 

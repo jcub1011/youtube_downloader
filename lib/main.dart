@@ -268,7 +268,7 @@ final StateProvider<String> downloadSourceProvider = StateProvider<String>((ref)
   PersistentAppSettings.readDownloadLink().then((link) {
     ref.read(downloadSourceProvider.notifier).state = link;
   });
-  return PersistentAppSettings.defaultDownloadLocation;
+  return PersistentAppSettings.defaultDownloadLink;
 });
 
 final errorListProvider = StateProvider<List<String>>((ref) {
