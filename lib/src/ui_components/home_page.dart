@@ -174,6 +174,7 @@ class DownloadLocationSelector extends ConsumerWidget {
             }
         
             ref.read(downloadLocationProvider.notifier).state = directory.path;
+            PersistentAppSettings.saveDownloadLocation(directory.path);
             log("Download location set to: ${directory.path}");
           },
         ),
@@ -221,6 +222,10 @@ class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
         children: [
           Expanded(
             child: TextFormField(
+              onEditingComplete: () {
+                log("URL: ${sourceUrlController.text}");
+                PersistentAppSettings.saveDownloadLink(sourceUrlController.text);
+              },
               controller: sourceUrlController,
               style: const TextStyle(
                 color: Colors.white,
@@ -254,6 +259,7 @@ class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
                 ref.read(downloadListProvider.notifier)
                   .setDownloadSource(sourceUrlController.text);
                 ref.read(downloadSourceProvider.notifier).state = sourceUrlController.text;
+                PersistentAppSettings.saveDownloadLink(sourceUrlController.text);
 
                 DefaultTabController.of(context).animateTo(1);
               }
