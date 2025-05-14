@@ -373,6 +373,7 @@ class DownloadSelectionView extends ConsumerWidget {
                   }
                   else {
                     ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
+                    DefaultTabController.of(context).animateTo(2);
                   }
                 }
               ),
