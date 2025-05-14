@@ -198,31 +198,41 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             total = response.contentLength ?? 0;
           },
           onData: (data) {
-            received += data.length;
+            try {
+              received += data.length;
 
-            double progress = received / total;
-            int currentPercent = (progress * 100).toInt();
-            currentPercent = currentPercent - currentPercent % 5; // Round down to nearest 5%.
+              double progress = received / total;
+              int currentPercent = (progress * 100).toInt();
+              currentPercent = currentPercent - currentPercent % 5; // Round down to nearest 5%.
 
-            if (currentPercent != previousPercent) {
-              log("Progress: $currentPercent%");
-              previousPercent = currentPercent;
-              state = [
-                ...state.sublist(0, index),
-                DownloadProgressItem(item.url, item.title, item.video!, progress),
-                ...state.sublist(index + 1),
-              ];
+              if (currentPercent != previousPercent) {
+                log("Progress: $currentPercent%");
+                previousPercent = currentPercent;
+                state = [
+                  ...state.sublist(0, index),
+                  DownloadProgressItem(item.url, item.title, item.video!, progress),
+                  ...state.sublist(index + 1),
+                ];
+              }
+            }
+            catch (error) {
+              VideoDownloader.errorEvent.broadcast(error.toString());
             }
           },
           onDone: (allData) {
-            log("Network download completed for: ${item.title}");
+            try {
+              log("Network download completed for: ${item.title}");
 
-            var file = File('$downloadPath/${item.video!.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')}.$audioExtension');
-            file.writeAsBytes(allData).then((file) {
-              log("File saved to: ${file.path}");
-            }).catchError((error) {
-              log("Error saving file: $error");
-            });
+              var file = File('$downloadPath/${item.video!.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')}.$audioExtension');
+              file.writeAsBytes(allData).then((file) {
+                log("File saved to: ${file.path}");
+              }).catchError((error) {
+                log("Error saving file: $error");
+              });
+            }
+            catch (error) {
+              VideoDownloader.errorEvent.broadcast(error.toString());
+            }
           },
           onError: (error) {
             log("Error downloading video: $error");
