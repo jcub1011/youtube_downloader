@@ -6,6 +6,8 @@ import 'package:youtube_downloader/src/ui_components/download_list.dart';
 import 'package:youtube_downloader/src/ui_components/download_overview_page.dart';
 import 'package:filepicker_windows/filepicker_windows.dart';
 
+import '../entities/video_retriever.dart';
+
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -190,6 +192,13 @@ class ConfigurationPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // This is pretty jank, but I don't know better alternatives without a major refactor.
+    VideoDownloader.errorEvent.unsubscribeAll();
+    VideoDownloader.errorEvent.subscribe((args) {
+      ref.read(errorListProvider.notifier).state.add(args.value);
+      log("Pushed error: ${args.value}");
+    });
+
     return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -420,3 +429,43 @@ class DownloadSelectionView extends ConsumerWidget {
   }
 }
 
+class ErrorPage extends ConsumerWidget {
+  const ErrorPage({super.key});
+
+  Widget _createErrorListTile(String error) {
+    return const ListTile(
+      title: Text("Error"),
+      subtitle: Text("Error message"),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var errorList = ref.watch(errorListProvider);
+
+    if (errorList.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(
+          child: Text(
+            "No errors.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      itemBuilder: (context, index) {
+        var error = errorList[index];
+        return _createErrorListTile(error);
+      },
+    );
+  }
+}

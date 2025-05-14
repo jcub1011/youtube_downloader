@@ -1,6 +1,6 @@
 import 'dart:collection';
-import 'dart:developer';
 import 'package:http/http.dart' as http;
+import 'package:event/event.dart';
 
 class VideoDownloadRequestArgs {
   final Uri url;
@@ -23,6 +23,9 @@ class VideoDownloadRequestArgs {
 }
 
 class VideoDownloader {
+  /// <String errorMessage>
+  static final errorEvent = Event<Value<String>>();
+
   int _maxConcurrentDownloads; 
   /// Queue of videos to download.
   final Queue<VideoDownloadRequestArgs> _queue; 
