@@ -1,6 +1,14 @@
 import 'dart:collection';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:event/event.dart';
+
+final videoDownloader = VideoDownloader(5);
+
+final errorListProvider = StateProvider<List<String>>((ref) {
+  return List<String>.empty();
+});
 
 class VideoDownloadRequestArgs {
   final Uri url;
@@ -166,5 +174,46 @@ class VideoDownloader {
     while (_activeClients.isNotEmpty) {
       _activeClients.removeLast().close();
     }
+  }
+}
+
+class ErrorPage extends ConsumerWidget {
+  const ErrorPage({super.key});
+
+  Widget _createErrorListTile(String error) {
+    return const ListTile(
+      title: Text("Error"),
+      subtitle: Text("Error message"),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var errorList = ref.watch(errorListProvider);
+
+    if (errorList.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(
+          child: Text(
+            "No errors.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      itemBuilder: (context, index) {
+        var error = errorList[index];
+        return _createErrorListTile(error);
+      },
+    );
   }
 }

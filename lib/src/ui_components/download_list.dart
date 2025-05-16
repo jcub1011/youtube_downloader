@@ -2,9 +2,125 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/main.dart';
 import 'package:youtube_downloader/src/entities/download_request.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+
+import '../entities/persistent_app_settings.dart';
+import 'download_overview_page.dart';
+
+
+class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadListItem>> {
+  DownloadListItemsProvider(super.state);
+
+  void setDownloadSource(String sourceUrl) {
+    PersistentAppSettings.saveDownloadLink(sourceUrl);
+    if (sourceUrl.contains("watch?v=")) {
+      _getVideo(sourceUrl);
+    }
+    else {
+      _getVideos(sourceUrl);
+    }
+  }
+  
+  void _getVideo(String videoLink) {
+    clearDownloadItems();
+
+    try {
+      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
+      wrapper.instance.videos.get(videoLink).then(
+        (Video video) {
+          _addDownloadItem(videoLink, video.title, true, video);
+          log("Video title: ${video.title}");
+        },
+        onError: (error) {
+          _addDownloadItem(videoLink, "Error retrieving video title.", true, null);
+          log("Error retrieving video title: $error");
+        },
+      );
+    }
+    catch (e) {
+      log("Error retrieving video title: $e");
+      _addDownloadItem(videoLink, "Error retrieving video title.", true, null);
+    }
+  }
+
+  void _getVideos(String playlistLink) {
+    clearDownloadItems();
+
+    try {
+      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
+      wrapper.instance.playlists.get(playlistLink).then(
+        (Playlist playlist) {
+          wrapper.instance.playlists.getVideos(playlistLink).forEach((video) {
+            _addDownloadItem(video.url, video.title, true, video);
+          });
+        },
+        onError: (error) {
+          _addDownloadItem(playlistLink, "Error retrieving video(s).", true, null);
+          log("Error retrieving video(s): $error");
+        },
+      );
+    }
+    catch (e) {
+      log("Error retrieving video(s).: $e");
+      _addDownloadItem(playlistLink, "Error retrieving video(s).", true, null);
+    }
+  }
+
+  void _addDownloadItem(String url, String title, bool isSelected, Video? video) {
+    state = [...state, ImmutableDownloadListItem(url, title, video: video, isSelected: isSelected)];
+  }
+
+  void setAllDownloadItemSelections(bool isSelected) {
+    if (state.isEmpty) return;
+
+    state = state.map((item) {
+      return ImmutableDownloadListItem(
+        item.url,
+        item.title,
+        video: item.video,
+        isSelected: isSelected,
+      );
+    }).toList();
+  }
+
+  void toggleDownloadItemSelection(ImmutableDownloadListItem item) {
+    final index = state.indexOf(item);
+    if (index != -1) {
+      final updatedItem = ImmutableDownloadListItem(
+        item.url,
+        item.title,
+        video: item.video,
+        isSelected: !item.isSelected,
+      );
+      
+      state = [
+        ...state.sublist(0, index),
+        updatedItem,
+        ...state.sublist(index + 1),
+      ];
+    }
+  }
+
+  void removeDownloadItem(int index) {
+    var toRemove = state[index];
+    removeDownloadItemByItem(toRemove);
+  }
+
+  void removeDownloadItemByItem(ImmutableDownloadListItem item) {
+    state = [
+      ...state.where((element) => element != item),
+    ];
+  }
+
+  void clearDownloadItems() {
+    state = [];
+  }
+}
+
+final downloadListProvider = StateNotifierProvider<DownloadListItemsProvider, List<ImmutableDownloadListItem>>((ref) {
+  return DownloadListItemsProvider([]);
+});
 
 class DownloadListView extends ConsumerWidget {
   const DownloadListView({super.key});
@@ -104,5 +220,150 @@ class DownloadListItem {
   String get title => _title;
   set setStateCallback(void Function(void Function())? callback) {
     _setStateCallback = callback;
+  }
+}
+
+class DownloadSelectionView extends ConsumerWidget {
+  const DownloadSelectionView({super.key});
+
+  String _getFormattedDuration(Duration duration) {
+    int minutes = duration.inMinutes;
+    int seconds = duration.inSeconds.remainder(60);
+    return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var downloadList = ref.watch(downloadListProvider);
+
+    if (downloadList.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(
+          child: Text(
+            "Loading videos. If loading is taking an unusual amount of time, make sure you have set the download url to a valid YouTube video or playlist link.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              TextButton(
+                child: const Row(
+                  children: [
+                    Icon(Icons.check_box, color: Color(0xFF44CFCB)),
+                    SizedBox(width: 8),
+                    Text(
+                      "Select All",
+                      style: TextStyle(
+                        color: Color(0xFF44CFCB),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  ref.read(downloadListProvider.notifier).setAllDownloadItemSelections(true);
+                  log("All items deselected.");
+                }
+              ),
+              TextButton(
+                child: const Row(
+                  children: [
+                    Icon(Icons.check_box_outline_blank, color: Color(0xFF44CFCB)),
+                    SizedBox(width: 8),
+                    Text(
+                      "Deselect All",
+                      style: TextStyle(
+                        color: Color(0xFF44CFCB),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  ref.read(downloadListProvider.notifier).setAllDownloadItemSelections(false);
+                  log("All items deselected.");
+                }
+              ),
+              TextButton(
+                child: const Row(
+                  children: [
+                    Icon(Icons.download, color: Color(0xFF44CFCB)),
+                    SizedBox(width: 8),
+                    Text(
+                      "Download Selected",
+                      style: TextStyle(
+                        color: Color(0xFF44CFCB),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  if (ref.read(downloadListProvider).where((element) => element.isSelected).isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        showCloseIcon: true,
+                        content: Text("No videos selected.")
+                      )
+                    );
+                  }
+                  else {
+                    ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
+                    DefaultTabController.of(context).animateTo(2);
+                  }
+                }
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            scrollDirection: Axis.vertical,
+            itemCount: downloadList.length,
+            itemBuilder: (context, index) {
+              var item = downloadList[index];
+              return CheckboxListTile(
+                controlAffinity: ListTileControlAffinity.leading,
+                title: DefaultTextStyle(
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(item.title),
+                      Text(" ${item.video?.author} | ${_getFormattedDuration(item.video?.duration ?? const Duration(seconds: 0))}"),
+                    ],
+                  ),
+                ),
+                value: item.isSelected,
+                onChanged: (bool? value) {
+                  ref.read(downloadListProvider.notifier).toggleDownloadItemSelection(item);
+                  log("Item ${item.title} is now ${item.isSelected ? "selected" : "unselected"}");
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

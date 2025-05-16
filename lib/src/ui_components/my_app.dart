@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:youtube_downloader/src/ui_components/home_page.dart';
 
+import '../entities/video_retriever.dart';
+import 'configuration_page.dart';
+import 'download_list.dart';
 import 'download_overview_page.dart';
 
 class DownloaderApp extends StatelessWidget {
