@@ -13,17 +13,17 @@ import 'download_list.dart';
 class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>> {
   DownloadProgressProvider(super.state);
 
-  void setDownloadProgressTargets(List<ImmutableDownloadListItem> items, String downloadLocation) {
+  void setDownloadProgressTargets(List<ImmutableDownloadListItem> items, String downloadLocation, {Function(String)? onErrorReported}) {
     state = [];
 
     for (var item in items) {
       if (item.isSelected && item.video != null) {
-        _beginDownload(item, downloadLocation);
+        _beginDownload(item, downloadLocation, onErrorReported: onErrorReported);
       }
     }
   }
 
-  void _beginDownload(ImmutableDownloadListItem item, String downloadPath) async {
+  void _beginDownload(ImmutableDownloadListItem item, String downloadPath, {Function(String)? onErrorReported}) async {
     var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 0.0);
     state = [...state, progressItem];
     int index = state.length - 1;
@@ -79,7 +79,12 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
               }
             }
             catch (error) {
-              VideoDownloader.errorEvent.broadcast(error.toString());
+              onErrorReported?.call(error.toString());
+              state = [
+                ...state.sublist(0, index),
+                DownloadProgressItem(item.url, "${item.title} - Error downloading.", item.video!, -1),
+                ...state.sublist(index + 1),
+              ];
               return;
             }
           },
@@ -97,7 +102,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                   DownloadProgressItem(item.url, "${item.title} - Error saving file.", item.video!, -1),
                   ...state.sublist(index + 1),
                 ];
-                VideoDownloader.errorEvent.broadcast(error.toString());
+                onErrorReported?.call(error.toString());
                 return;
               });
             }
@@ -107,7 +112,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                 DownloadProgressItem(item.url, "${item.title} - Error downloading.", item.video!, -1),
                 ...state.sublist(index + 1),
               ];
-              VideoDownloader.errorEvent.broadcast(error.toString());
+              onErrorReported?.call(error.toString());
               return;
             }
           },
@@ -118,7 +123,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
               DownloadProgressItem(item.url, "${item.title} - Error downloading file.", item.video!, -1),
               ...state.sublist(index + 1),
             ];
-            VideoDownloader.errorEvent.broadcast(error.toString());
+            onErrorReported?.call(error.toString());
             return;
           }
         ));
@@ -132,12 +137,12 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
         ];
         var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 1);
         state = [...state.sublist(0, index), progressItem, ...state.sublist(index + 1)];
-        VideoDownloader.errorEvent.broadcast(e.toString());
+        onErrorReported?.call(extensionStreamHasListener.toString());
         return;
       });
     } catch (e) {
       log("Error downloading ${item.url}: $e");
-      VideoDownloader.errorEvent.broadcast(e.toString());
+      onErrorReported?.call(e.toString());
       return;
     }
   }

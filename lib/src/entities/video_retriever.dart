@@ -1,8 +1,8 @@
 import 'dart:collection';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:event/event.dart';
 
 final videoDownloader = VideoDownloader(5);
 
@@ -31,9 +31,6 @@ class VideoDownloadRequestArgs {
 }
 
 class VideoDownloader {
-  /// <String errorMessage>
-  static final errorEvent = Event<Value<String>>();
-
   int _maxConcurrentDownloads; 
   /// Queue of videos to download.
   final Queue<VideoDownloadRequestArgs> _queue; 
@@ -106,7 +103,6 @@ class VideoDownloader {
             cancelOnError: true,
             onError: (error) {
               log("Error downloading video: $error");
-              VideoDownloader.errorEvent.broadcast(error.toString());
 
               // Replace client.
               _activeClients.remove(client);
@@ -123,7 +119,6 @@ class VideoDownloader {
           },
           onError: (error) {
             log("Error downloading video: $error");
-            VideoDownloader.errorEvent.broadcast(error.toString());
 
             // Replace client.
             _activeClients.remove(client);
@@ -140,7 +135,6 @@ class VideoDownloader {
         }
         catch (error) {
           log("Error downloading video: $error");
-          VideoDownloader.errorEvent.broadcast(error.toString());
 
           // Replace client.
           _activeClients.remove(client);
@@ -158,11 +152,8 @@ class VideoDownloader {
     }
     catch (error) {
       log("Error starting downloads: $error");
-      VideoDownloader.errorEvent.broadcast(error.toString());
       log("Unable to recover from error. Cancelling all downloads.");
-      VideoDownloader.errorEvent.broadcast("Unable to recover from error. Cancelling all downloads.");
       log("Please restart the application.");
-      VideoDownloader.errorEvent.broadcast("Please restart the application.");
     }
   }
 

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/src/entities/download_request.dart';
+import 'package:youtube_downloader/src/entities/video_retriever.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../entities/persistent_app_settings.dart';
@@ -311,7 +312,16 @@ class DownloadSelectionView extends ConsumerWidget {
                     );
                   }
                   else {
-                    ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
+                    ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider), 
+                    onErrorReported: (error) {
+                      ref.read(errorListProvider.notifier).state.add(error);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          showCloseIcon: true,
+                          content: Text("Error downloading a video. Check the error tab for more details.")
+                        )
+                      );
+                    });
                     DefaultTabController.of(context).animateTo(2);
                   }
                 }

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../entities/persistent_app_settings.dart';
-import '../entities/video_retriever.dart';
 import 'download_list.dart';
 
 class UrlEntrySpot extends ConsumerWidget {
@@ -92,12 +91,6 @@ class ConfigurationPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // This is pretty jank, but I don't know better alternatives without a major refactor.
-    VideoDownloader.errorEvent.unsubscribeAll();
-    VideoDownloader.errorEvent.subscribe((args) {
-      ref.read(errorListProvider.notifier).state.add(args.value);
-      log("Pushed error: ${args.value}");
-    });
-
     return const Padding(
       padding: EdgeInsets.all(12.0),
       child: Column(
