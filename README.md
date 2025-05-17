@@ -1,29 +1,10 @@
 # youtube_downloader
+A youtube video audio downloader built using Flutter and Dart.
 
-A new Flutter project.
+This project was intended to replace a project I created before called [Music Maker 2.0](https://github.com/jcub1011/Music-Maker-2.0). That program was able to download video, audio, and embed metadata on the downloaded files. I tried to recreate that functionality here but unforturnately I could not find any good Flutter libraries for modifying metadata and I have not implemented video download either.
 
-## Getting Started
+# Features
+- Audio download
+- That's it
 
-This project is a starting point for a Flutter application that follows the
-[simple app state management
-tutorial](https://flutter.dev/to/state-management-sample).
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-## Assets
-
-The `assets` directory houses images, fonts, and any other files you want to
-include with your application.
-
-The `assets/images` directory contains [resolution-aware
-images](https://flutter.dev/to/resolution-aware-images).
-
-## Localization
-
-This project generates localized messages based on arb files found in
-the `lib/src/localization` directory.
-
-To support additional languages, please visit the tutorial on
-[Internationalizing Flutter apps](https://flutter.dev/to/internationalization).
+See pubspec.yaml for dependencies.
