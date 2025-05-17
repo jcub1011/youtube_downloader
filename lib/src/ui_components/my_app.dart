@@ -5,6 +5,10 @@ import 'configuration_page.dart';
 import 'download_list.dart';
 import 'download_overview_page.dart';
 
+// https://coolors.co/000000-14213d-fca311-e5e5e5-ffffff
+// http://coolors.co/dce0d9-31081f-6b0f1a-595959-808f85
+// https://coolors.co/122c34-224870-2a4494-4ea5d9-44cfcb
+
 class DownloaderApp extends StatelessWidget {
   const DownloaderApp({super.key});
   
