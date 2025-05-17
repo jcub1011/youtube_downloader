@@ -7,50 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../entities/persistent_app_settings.dart';
 import 'download_list.dart';
 
-class UrlEntrySpot extends ConsumerWidget {
-  const UrlEntrySpot({super.key, required this.sourceUrlController});
-  final TextEditingController sourceUrlController;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: TextFormField(
-              controller: sourceUrlController,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.normal,
-              ),
-              decoration: const InputDecoration(
-                labelText: 'Enter URL here...', 
-                labelStyle: TextStyle(
-                  color: Color(0xFF44CFCB),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(Icons.search),
-            color: const Color(0xFF44CFCB),
-            onPressed: () {
-              log("URL: ${sourceUrlController.text}");
-              ref.read(downloadListProvider.notifier)
-                .setDownloadSource(sourceUrlController.text);
-            }
-          ),
-        ],
-      ),
-    );
-  }
-}
-
+/// Handles getting the download location from the user.
 class DownloadLocationSelector extends ConsumerWidget {
   const DownloadLocationSelector({super.key});
 
@@ -85,6 +42,7 @@ class DownloadLocationSelector extends ConsumerWidget {
   }
 }
 
+/// Displays the configuration settings for the app.
 class ConfigurationPage extends ConsumerWidget {
   const ConfigurationPage({super.key});
 
@@ -105,6 +63,7 @@ class ConfigurationPage extends ConsumerWidget {
   }
 }
 
+/// Handles getting the download link from the user.
 class DownloadLinkSelector extends ConsumerStatefulWidget {
   const DownloadLinkSelector({super.key});
 

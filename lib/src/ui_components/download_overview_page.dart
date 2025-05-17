@@ -11,6 +11,8 @@ import '../entities/download_request.dart';
 import '../entities/video_retriever.dart';
 import 'download_list.dart';
 
+/// Stores the current download progress for each video.
+/// Handles the download process for each video.
 class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>> {
   DownloadProgressProvider(super.state);
 
@@ -153,6 +155,7 @@ final downloadProgressProvider = StateNotifierProvider<DownloadProgressProvider,
   return DownloadProgressProvider([]);
 });
 
+/// Displays the download progress for each video.
 class DownloadOverviewPage extends ConsumerWidget {
   const DownloadOverviewPage({super.key});
   

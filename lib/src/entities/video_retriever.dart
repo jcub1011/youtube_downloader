@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 final videoDownloader = VideoDownloader(5);
 
+/// Contains all the relevant information for a video download request.
 class VideoDownloadRequestArgs {
   final Uri url;
   /// Called when request is started.
@@ -24,6 +25,7 @@ class VideoDownloadRequestArgs {
   });
 }
 
+/// Handles the downloading of videos using the http library.
 class VideoDownloader {
   int _maxConcurrentDownloads; 
   /// Queue of videos to download.
@@ -62,6 +64,7 @@ class VideoDownloader {
     startDownloads();
   }
 
+  /// Begins the downloads.
   void startDownloads() {
     try {
       while (_clientPool.isNotEmpty && _queue.isNotEmpty) {

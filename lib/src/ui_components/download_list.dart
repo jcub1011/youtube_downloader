@@ -8,7 +8,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../entities/persistent_app_settings.dart';
 import 'download_overview_page.dart';
 
-
+/// Stores the download list items.
 class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadListItem>> {
   DownloadListItemsProvider(super.state);
 
@@ -122,6 +122,7 @@ final downloadListProvider = StateNotifierProvider<DownloadListItemsProvider, Li
   return DownloadListItemsProvider([]);
 });
 
+/// Displays the items in the download list.
 class DownloadListView extends ConsumerWidget {
   const DownloadListView({super.key});
 
@@ -223,6 +224,7 @@ class DownloadListItem {
   }
 }
 
+/// Allows the user to select which videos to download.
 class DownloadSelectionView extends ConsumerWidget {
   const DownloadSelectionView({super.key});
 

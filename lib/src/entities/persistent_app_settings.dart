@@ -26,6 +26,7 @@ final StateProvider<String> downloadSourceProvider = StateProvider<String>((ref)
   return PersistentAppSettings.defaultDownloadLink;
 });
 
+/// Handles app settings that must persist between app sessions. Stored in a text file within the working app directory.
 class PersistentAppSettings {
   static final String _defaultDownloadLocation = Directory.current.path;
   static String get defaultDownloadLocation => _defaultDownloadLocation;
@@ -45,6 +46,7 @@ class PersistentAppSettings {
     return readSetting(downloadLinkKey, defaultDownloadLink);
   }
 
+  /// Reads an individual setting from the settings file. Uses the default value if the setting is not found.
   static Future<String> readSetting(String key, String defaultValue) async {
     try {
       // Create settings if it doesn't exist.
@@ -83,6 +85,7 @@ class PersistentAppSettings {
     saveSetting(downloadLinkKey, link);
   }
 
+  /// Saves an individual setting to the settings file.
   static saveSetting(String key, String value) async {
     // Create settings if it doesn't exist.
     if (await File(_settingsFilePath).exists()) {
