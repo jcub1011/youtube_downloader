@@ -11,6 +11,7 @@ import 'download_overview_page.dart';
 /// Stores the download list items.
 class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadListItem>> {
   DownloadListItemsProvider(super.state);
+  final YoutubeExplode _ytExplode = YoutubeExplode();
 
   void setDownloadSource(String sourceUrl) {
     PersistentAppSettings.saveDownloadLink(sourceUrl);
@@ -26,8 +27,7 @@ class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadList
     clearDownloadItems();
 
     try {
-      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
-      wrapper.instance.videos.get(videoLink).then(
+      _ytExplode.videos.get(videoLink).then(
         (Video video) {
           _addDownloadItem(videoLink, video.title, true, video);
           log("Video title: ${video.title}");
@@ -48,16 +48,15 @@ class DownloadListItemsProvider extends StateNotifier<List<ImmutableDownloadList
     clearDownloadItems();
 
     try {
-      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
-      wrapper.instance.playlists.get(playlistLink).then(
+      _ytExplode.playlists.get(playlistLink).then(
         (Playlist playlist) {
-          wrapper.instance.playlists.getVideos(playlistLink).forEach((video) {
+          _ytExplode.playlists.getVideos(playlistLink).forEach((video) {
             _addDownloadItem(video.url, video.title, true, video);
           });
         },
         onError: (error) {
-          _addDownloadItem(playlistLink, "Error retrieving video(s).", true, null);
           log("Error retrieving video(s): $error");
+          _addDownloadItem(playlistLink, "Error retrieving video(s).", true, null);
         },
       );
     }
@@ -172,6 +171,7 @@ class DownloadListItem {
   Video? _video;
   bool isSelected = true;
   void Function(void Function())? _setStateCallback;
+  final _ytExplode = YTExplodeWrapper(YoutubeExplode());
 
   DownloadListItem(String url, [void Function(void Function())? setStateCallback])
       : _url = url,
@@ -196,8 +196,7 @@ class DownloadListItem {
         isSelected = true;
 
   void getVideo(String link) {
-      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
-      wrapper.instance.videos.get(url).then(
+      _ytExplode.instance.videos.get(url).then(
       (Video video) {
         _video = video;
         _title = video.title;

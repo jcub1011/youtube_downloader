@@ -15,6 +15,8 @@ import 'download_list.dart';
 /// Handles the download process for each video.
 class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>> {
   DownloadProgressProvider(super.state);
+  
+  final _ytExplode =YTExplodeWrapper(YoutubeExplode());
 
   void setDownloadProgressTargets(List<ImmutableDownloadListItem> items, String downloadLocation, {Function(String)? onErrorReported}) {
     state = [];
@@ -27,7 +29,16 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
   }
 
   void _beginDownload(ImmutableDownloadListItem item, String downloadPath, {Function(String)? onErrorReported}) async {
-    var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 0.0);
+    if (item.video == null) {
+      log("Unable to download video: ${item.title} - Video is null.");
+      state = [
+        ...state,
+        DownloadProgressItem(item.url, "${item.title} - Error retrieving video link.", item.video, -1),
+      ];
+      return;
+    }
+
+    var progressItem = DownloadProgressItem(item.url, item.title, item.video, 0.0);
     state = [...state, progressItem];
     int index = state.length - 1;
     log("Download started for: ${item.title}");
@@ -35,8 +46,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
     try {
       // Add to queue of download requests rather than handle here. 
       //The wrapper gets discarded automatically before manifest process is finished.
-      YTExplodeWrapper wrapper = YTExplodeWrapper(YoutubeExplode());
-      wrapper.instance.videos.streamsClient.getManifest(item.video!.id).then((manifest) {
+      _ytExplode.instance.videos.streamsClient.getManifest(item.video!.id).then((manifest) {
         var audioInfo = manifest.audioOnly.withHighestBitrate();
         for (int i = 0; i < manifest.audioOnly.length; i++) {
           log("Audio ${i + 1}: ${manifest.audioOnly[i].bitrate} ${manifest.audioOnly[i].codec.mimeType} ${manifest.audioOnly[i].audioCodec}");
@@ -76,7 +86,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                 previousPercent = currentPercent;
                 state = [
                   ...state.sublist(0, index),
-                  DownloadProgressItem(item.url, item.title, item.video!, progress, downloadURI: opusAudio.url.toString()),
+                  DownloadProgressItem(item.url, item.title, item.video, progress, downloadURI: opusAudio.url.toString()),
                   ...state.sublist(index + 1),
                 ];
               }
@@ -85,7 +95,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
               onErrorReported?.call(error.toString());
               state = [
                 ...state.sublist(0, index),
-                DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
+                DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video, -1, downloadURI: opusAudio.url.toString()),
                 ...state.sublist(index + 1),
               ];
               return;
@@ -102,7 +112,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                 log("Error saving file: $error");
                 state = [
                   ...state.sublist(0, index),
-                  DownloadProgressItem(item.url, "${item.title} - Error saving file, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
+                  DownloadProgressItem(item.url, "${item.title} - Error saving file, click to copy download link.", item.video, -1, downloadURI: opusAudio.url.toString()),
                   ...state.sublist(index + 1),
                 ];
                 onErrorReported?.call(error.toString());
@@ -112,7 +122,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             catch (error) {
               state = [
                 ...state.sublist(0, index),
-                DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
+                DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video, -1, downloadURI: opusAudio.url.toString()),
                 ...state.sublist(index + 1),
               ];
               onErrorReported?.call(error.toString());
@@ -123,7 +133,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             log("Error downloading video: $error");
             state = [
               ...state.sublist(0, index),
-              DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
+              DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video, -1, downloadURI: opusAudio.url.toString()),
               ...state.sublist(index + 1),
             ];
             onErrorReported?.call(error.toString());
@@ -135,16 +145,19 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
         log("Error retrieving video manifest: $e");
         state = [
           ...state.sublist(0, index),
-          DownloadProgressItem(item.url, "${item.title} - Error retrieving video manifest.", item.video!, -1),
+          DownloadProgressItem(item.url, "${item.title} - Error retrieving video manifest. Unable to get download link.", item.video, -1),
           ...state.sublist(index + 1),
         ];
-        var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 1);
-        state = [...state.sublist(0, index), progressItem, ...state.sublist(index + 1)];
         onErrorReported?.call(extensionStreamHasListener.toString());
         return;
       });
     } catch (e) {
       log("Error downloading ${item.url}: $e");
+      state = [
+        ...state.sublist(0, index),
+        DownloadProgressItem(item.url, "${item.title} - Error retrieving video. Unable to get download link.", item.video, -1),
+        ...state.sublist(index + 1),
+      ];
       onErrorReported?.call(e.toString());
       return;
     }
@@ -215,7 +228,7 @@ class DownloadOverviewPage extends ConsumerWidget {
 class DownloadProgressItem {
   final String url;
   final String title;
-  final Video video;
+  final Video? video;
   final double progress;
   final String? downloadURI;
 
