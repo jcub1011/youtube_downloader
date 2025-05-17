@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../entities/video_retriever.dart';
@@ -16,7 +18,6 @@ class DownloaderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: true, 
-
       home: DefaultTabController(
         length: 4,
         child: Scaffold(
@@ -26,9 +27,11 @@ class DownloaderApp extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 25,
+                color: Colors.cyanAccent,
               ),
             ),
             bottom: const TabBar(
+              dividerHeight: 0,
               tabs: [
                 Tab(text: "Configuration"),
                 Tab(text: "Download Selections"),
@@ -50,7 +53,32 @@ class DownloaderApp extends StatelessWidget {
 
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color.fromARGB(255, 159, 75, 49),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 43, 58, 103),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromARGB(0, 0, 0, 0),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.white),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        tabBarTheme: const TabBarTheme(
+          labelColor: Colors.white,
+          unselectedLabelColor: Color.fromARGB(255, 0, 157, 220),
+          labelStyle: TextStyle(
+            fontSize: 16,
+            color: Color.fromARGB(255, 78, 165, 217),
+            fontWeight: FontWeight.w600,
+          ),
+          indicatorColor: Color.fromARGB(255, 78, 165, 217),
+        ),
+        buttonTheme: const ButtonThemeData(
+          buttonColor: Color.fromARGB(255, 78, 165, 217),
+          hoverColor: Color.fromARGB(255, 99, 124, 201),
+          textTheme: ButtonTextTheme.primary,
+        ),
       ),
     );
   }
