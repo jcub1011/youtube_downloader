@@ -328,22 +328,15 @@ class DownloadSelectionView extends ConsumerWidget {
                 fillColor: WidgetStateProperty.all<Color>(const Color.fromARGB(0, 244, 96, 54)),
                 checkboxScaleFactor: 1.25,
                 controlAffinity: ListTileControlAffinity.leading,
-                title: DefaultTextStyle(
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(item.title),
-                      Text(
-                        " ${item.video?.author} | ${_getFormattedDuration(item.video?.duration ?? const Duration(seconds: 0))}",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                    ],
-                  ),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(item.title, style: Theme.of(context).textTheme.titleSmall),
+                    Text(
+                      " ${item.video?.author} | ${_getFormattedDuration(item.video?.duration ?? const Duration(seconds: 0))}",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ],
                 ),
                 value: item.isSelected,
                 onChanged: (bool? value) {

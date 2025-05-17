@@ -80,6 +80,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             }
             catch (error) {
               VideoDownloader.errorEvent.broadcast(error.toString());
+              return;
             }
           },
           onDone: (allData) {
@@ -91,31 +92,53 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                 log("File saved to: ${file.path}");
               }).catchError((error) {
                 log("Error saving file: $error");
+                state = [
+                  ...state.sublist(0, index),
+                  DownloadProgressItem(item.url, "${item.title} - Error saving file.", item.video!, -1),
+                  ...state.sublist(index + 1),
+                ];
+                VideoDownloader.errorEvent.broadcast(error.toString());
+                return;
               });
             }
             catch (error) {
+              state = [
+                ...state.sublist(0, index),
+                DownloadProgressItem(item.url, "${item.title} - Error downloading.", item.video!, -1),
+                ...state.sublist(index + 1),
+              ];
               VideoDownloader.errorEvent.broadcast(error.toString());
+              return;
             }
           },
           onError: (error) {
             log("Error downloading video: $error");
             state = [
               ...state.sublist(0, index),
-              DownloadProgressItem(item.url, item.title, item.video!, 0.0),
+              DownloadProgressItem(item.url, "${item.title} - Error downloading file.", item.video!, -1),
               ...state.sublist(index + 1),
             ];
+            VideoDownloader.errorEvent.broadcast(error.toString());
+            return;
           }
         ));
       }, 
       onError: (e) {
         log("Error retrieving video manifest: $e");
+        state = [
+          ...state.sublist(0, index),
+          DownloadProgressItem(item.url, "${item.title} - Error retrieving video manifest.", item.video!, -1),
+          ...state.sublist(index + 1),
+        ];
         var progressItem = DownloadProgressItem(item.url, item.title, item.video!, 1);
         state = [...state.sublist(0, index), progressItem, ...state.sublist(index + 1)];
-        return null;
+        VideoDownloader.errorEvent.broadcast(e.toString());
+        return;
       });
     } catch (e) {
       log("Error downloading ${item.url}: $e");
-      return null;
+      VideoDownloader.errorEvent.broadcast(e.toString());
+      return;
     }
   }
 }
@@ -136,14 +159,17 @@ class DownloadOverviewPage extends ConsumerWidget {
       itemBuilder: (context, index) {
         var item = downloadList[index];
         return ListTile(
-          title: Text(item.title),
+          title: Text(item.title, style: Theme.of(context).textTheme.titleSmall),
           trailing: SizedBox(
-            width: 150,
+            width: 200,
             child: LinearProgressIndicator(
-              value: item.progress,
-              backgroundColor: Colors.grey,
-              color: Colors.blue,
-              minHeight: 5,
+              value: item.progress >= 0 ? item.progress : null,
+              color: item.progress >= 0 ? const Color.fromARGB(255, 197, 216, 109) : const Color.fromARGB(255, 172, 57, 49),
+              backgroundColor: const Color.fromARGB(255, 27, 153, 139),
+              minHeight: 8,
+              semanticsLabel: "Download progress for ${item.title}",
+              semanticsValue: "${(item.progress * 100).toStringAsFixed(0)}%",
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
         );

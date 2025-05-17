@@ -110,6 +110,11 @@ class DownloaderApp extends StatelessWidget {
             fontWeight: FontWeight.normal,
             fontStyle: FontStyle.italic,
           ),
+          titleSmall: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+          ),
         ),
         iconButtonTheme: const IconButtonThemeData(
           style: ButtonStyle(
