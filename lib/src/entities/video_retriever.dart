@@ -180,10 +180,9 @@ class VideoDownloader {
 class ErrorPage extends ConsumerWidget {
   const ErrorPage({super.key});
 
-  Widget _createErrorListTile(String error) {
-    return const ListTile(
-      title: Text("Error"),
-      subtitle: Text("Error message"),
+  Widget _createErrorListTile(String error, BuildContext context) {
+    return ListTile(
+      title: SelectableText(error, style: Theme.of(context).textTheme.titleSmall),
     );
   }
 
@@ -196,12 +195,12 @@ class ErrorPage extends ConsumerWidget {
         padding: EdgeInsets.all(8.0),
         child: Center(
           child: Text(
-            "No errors.",
+            "No Errors",
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
-              fontWeight: FontWeight.normal,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -209,10 +208,11 @@ class ErrorPage extends ConsumerWidget {
     }
 
     return ListView.builder(
+      itemCount: errorList.length,
       scrollDirection: Axis.vertical,
       itemBuilder: (context, index) {
         var error = errorList[index];
-        return _createErrorListTile(error);
+        return _createErrorListTile(error, context);
       },
     );
   }

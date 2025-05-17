@@ -98,17 +98,15 @@ class ConfigurationPage extends ConsumerWidget {
       log("Pushed error: ${args.value}");
     });
 
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Column(
-          spacing: 12,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DownloadLocationSelector(),
-            DownloadLinkSelector(),
-          ],
-        ),
+    return const Padding(
+      padding: EdgeInsets.all(12.0),
+      child: Column(
+        spacing: 12,
+        children: [
+          SizedBox(height: 12),
+          DownloadLocationSelector(),
+          DownloadLinkSelector(),
+        ],
       ),
     );
   }
