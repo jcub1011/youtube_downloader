@@ -103,7 +103,7 @@ class ConfigurationPage extends ConsumerWidget {
       child: Column(
         spacing: 12,
         children: [
-          SizedBox(height: 12),
+          SizedBox(height: 0),
           DownloadLocationSelector(),
           DownloadLinkSelector(),
         ],

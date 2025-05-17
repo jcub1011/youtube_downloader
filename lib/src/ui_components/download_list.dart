@@ -255,6 +255,7 @@ class DownloadSelectionView extends ConsumerWidget {
 
     return Column(
       children: [
+        const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
