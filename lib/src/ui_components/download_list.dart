@@ -258,6 +258,7 @@ class DownloadSelectionView extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
+            spacing: 12,
             children: [
               TextButton(
                 child: const Row(
@@ -266,11 +267,6 @@ class DownloadSelectionView extends ConsumerWidget {
                     SizedBox(width: 8),
                     Text(
                       "Select All",
-                      style: TextStyle(
-                        color: Color(0xFF44CFCB),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ],
                 ),
@@ -286,11 +282,6 @@ class DownloadSelectionView extends ConsumerWidget {
                     SizedBox(width: 8),
                     Text(
                       "Deselect All",
-                      style: TextStyle(
-                        color: Color(0xFF44CFCB),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ],
                 ),
@@ -306,11 +297,6 @@ class DownloadSelectionView extends ConsumerWidget {
                     SizedBox(width: 8),
                     Text(
                       "Download Selected",
-                      style: TextStyle(
-                        color: Color(0xFF44CFCB),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ],
                 ),

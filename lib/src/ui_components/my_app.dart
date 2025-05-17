@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../entities/video_retriever.dart';
@@ -53,7 +51,7 @@ class DownloaderApp extends StatelessWidget {
 
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color.fromARGB(255, 43, 58, 103),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 46, 41, 78),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromARGB(0, 0, 0, 0),
           elevation: 0,
@@ -66,18 +64,52 @@ class DownloaderApp extends StatelessWidget {
         ),
         tabBarTheme: const TabBarTheme(
           labelColor: Colors.white,
-          unselectedLabelColor: Color.fromARGB(255, 0, 157, 220),
+          unselectedLabelColor: Color.fromARGB(255, 27, 153, 139),
           labelStyle: TextStyle(
             fontSize: 16,
-            color: Color.fromARGB(255, 78, 165, 217),
+            color: Color.fromARGB(255, 255, 255, 255),
             fontWeight: FontWeight.w600,
           ),
-          indicatorColor: Color.fromARGB(255, 78, 165, 217),
+          indicatorColor: Color.fromARGB(255, 244, 96, 54),
         ),
         buttonTheme: const ButtonThemeData(
-          buttonColor: Color.fromARGB(255, 78, 165, 217),
-          hoverColor: Color.fromARGB(255, 99, 124, 201),
+          buttonColor: Color.fromARGB(255, 244, 96, 54),
+          hoverColor: Color.fromARGB(150, 244, 96, 54),
           textTheme: ButtonTextTheme.primary,
+        ),
+        textButtonTheme: const TextButtonThemeData(
+          style: ButtonStyle(
+            foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+            backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(175, 244, 96, 54)),
+            overlayColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 244, 96, 54)),
+            textStyle: WidgetStatePropertyAll<TextStyle>(
+              TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          labelStyle: TextStyle(
+            color: Color.fromARGB(255, 244, 96, 54),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color.fromARGB(255, 244, 96, 54), width: 2),
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color.fromARGB(175, 244, 96, 54)),
+          ),
+        ),
+        textTheme: const TextTheme(
+          labelLarge: TextStyle(
+            color: Colors.white70,
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ),
     );

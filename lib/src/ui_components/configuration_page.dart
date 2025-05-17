@@ -60,6 +60,7 @@ class DownloadLocationSelector extends ConsumerWidget {
     return Row(
       children: [
         TextButton(
+          style: Theme.of(context).textButtonTheme.style,
           child: const Text('Select Download Location'),
           onPressed: () {
             var directorySelector = DirectoryPicker()..title = "Select Download Location";
@@ -76,7 +77,10 @@ class DownloadLocationSelector extends ConsumerWidget {
           },
         ),
         const SizedBox(width: 12),
-        Text(ref.watch(downloadLocationProvider)),
+        Text(
+          ref.watch(downloadLocationProvider),
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
       ],
     );
   }
@@ -137,13 +141,14 @@ class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
             decoration: const InputDecoration(
               labelText: 'Enter URL here...', 
               labelStyle: TextStyle(
-                color: Color(0xFF44CFCB),
+                color: Color.fromARGB(255, 27, 153, 139),
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
           const SizedBox(height: 12),
           TextButton(
+            style: Theme.of(context).textButtonTheme.style,
             onPressed: () {
               log("URL: ${sourceUrlController.text}");
 
@@ -166,11 +171,6 @@ class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
             },
             child: const Text(
               "Load Download List",
-              style: TextStyle(
-                color: Color(0xFF44CFCB),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
             ),
           ),
         ],
