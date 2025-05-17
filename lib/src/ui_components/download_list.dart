@@ -227,6 +227,10 @@ class DownloadListItem {
 class DownloadSelectionView extends ConsumerWidget {
   const DownloadSelectionView({super.key});
 
+  // This is a hacky solution to get the most up to date context and ref. Sorry.
+  static BuildContext? _context;
+  static WidgetRef? _ref;
+
   String _getFormattedDuration(Duration duration) {
     int minutes = duration.inMinutes;
     int seconds = duration.inSeconds.remainder(60);
@@ -253,6 +257,8 @@ class DownloadSelectionView extends ConsumerWidget {
         ),
       );
     }
+    _context = context;
+    _ref = ref;
 
     return Column(
       children: [
@@ -314,8 +320,8 @@ class DownloadSelectionView extends ConsumerWidget {
                   else {
                     ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider), 
                     onErrorReported: (error) {
-                      ref.read(errorListProvider.notifier).state.add(error);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      _ref!.read(errorListProvider.notifier).state.add(error);
+                      ScaffoldMessenger.of(_context!).showSnackBar(
                         const SnackBar(
                           showCloseIcon: true,
                           content: Text("Error downloading a video. Check the error tab for more details.")

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mime/mime.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:flutter/services.dart';
 
 import '../entities/download_request.dart';
 import '../entities/video_retriever.dart';
@@ -73,7 +74,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                 previousPercent = currentPercent;
                 state = [
                   ...state.sublist(0, index),
-                  DownloadProgressItem(item.url, item.title, item.video!, progress),
+                  DownloadProgressItem(item.url, item.title, item.video!, progress, downloadURI: opusAudio.url.toString()),
                   ...state.sublist(index + 1),
                 ];
               }
@@ -82,7 +83,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
               onErrorReported?.call(error.toString());
               state = [
                 ...state.sublist(0, index),
-                DownloadProgressItem(item.url, "${item.title} - Error downloading.", item.video!, -1),
+                DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
                 ...state.sublist(index + 1),
               ];
               return;
@@ -99,7 +100,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
                 log("Error saving file: $error");
                 state = [
                   ...state.sublist(0, index),
-                  DownloadProgressItem(item.url, "${item.title} - Error saving file.", item.video!, -1),
+                  DownloadProgressItem(item.url, "${item.title} - Error saving file, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
                   ...state.sublist(index + 1),
                 ];
                 onErrorReported?.call(error.toString());
@@ -109,7 +110,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             catch (error) {
               state = [
                 ...state.sublist(0, index),
-                DownloadProgressItem(item.url, "${item.title} - Error downloading.", item.video!, -1),
+                DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
                 ...state.sublist(index + 1),
               ];
               onErrorReported?.call(error.toString());
@@ -120,7 +121,7 @@ class DownloadProgressProvider extends StateNotifier<List<DownloadProgressItem>>
             log("Error downloading video: $error");
             state = [
               ...state.sublist(0, index),
-              DownloadProgressItem(item.url, "${item.title} - Error downloading file.", item.video!, -1),
+              DownloadProgressItem(item.url, "${item.title} - Error downloading, click to copy download link.", item.video!, -1, downloadURI: opusAudio.url.toString()),
               ...state.sublist(index + 1),
             ];
             onErrorReported?.call(error.toString());
@@ -164,6 +165,30 @@ class DownloadOverviewPage extends ConsumerWidget {
       itemBuilder: (context, index) {
         var item = downloadList[index];
         return ListTile(
+          onTap: () async {
+            ScaffoldMessenger.of(context).clearSnackBars();
+            if (item.downloadURI == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: SelectableText("No download link available for video ${item.url}."),
+                  showCloseIcon: true,
+
+                )
+              );
+            }
+            else {
+              const int maxURIlength = 40;
+              String truncatedURI = item.downloadURI!.length > maxURIlength ? "${item.downloadURI!.characters.take(maxURIlength - 3)}..." : item.downloadURI!;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: SelectableText("Copied $truncatedURI to the clipboard."),
+                  showCloseIcon: true,
+
+                )
+              );
+              await Clipboard.setData(ClipboardData(text: item.downloadURI!));
+            }
+          },
           title: Text(item.title, style: Theme.of(context).textTheme.titleSmall),
           trailing: SizedBox(
             width: 200,
@@ -189,6 +214,7 @@ class DownloadProgressItem {
   final String title;
   final Video video;
   final double progress;
+  final String? downloadURI;
 
-  const DownloadProgressItem(this.url, this.title, this.video, this.progress);
+  const DownloadProgressItem(this.url, this.title, this.video, this.progress, {this.downloadURI});
 }
