@@ -1,14 +1,8 @@
 import 'dart:collection';
 import 'dart:developer';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 final videoDownloader = VideoDownloader(5);
-
-final errorListProvider = StateProvider<List<String>>((ref) {
-  return List<String>.empty();
-});
 
 class VideoDownloadRequestArgs {
   final Uri url;
@@ -165,46 +159,5 @@ class VideoDownloader {
     while (_activeClients.isNotEmpty) {
       _activeClients.removeLast().close();
     }
-  }
-}
-
-class ErrorPage extends ConsumerWidget {
-  const ErrorPage({super.key});
-
-  Widget _createErrorListTile(String error, BuildContext context) {
-    return ListTile(
-      title: SelectableText(error, style: Theme.of(context).textTheme.titleSmall),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    var errorList = ref.watch(errorListProvider);
-
-    if (errorList.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Center(
-          child: Text(
-            "No Errors",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: errorList.length,
-      scrollDirection: Axis.vertical,
-      itemBuilder: (context, index) {
-        var error = errorList[index];
-        return _createErrorListTile(error, context);
-      },
-    );
   }
 }

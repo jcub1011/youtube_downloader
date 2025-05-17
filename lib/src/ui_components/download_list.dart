@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/src/entities/download_request.dart';
-import 'package:youtube_downloader/src/entities/video_retriever.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../entities/persistent_app_settings.dart';
@@ -227,10 +226,6 @@ class DownloadListItem {
 class DownloadSelectionView extends ConsumerWidget {
   const DownloadSelectionView({super.key});
 
-  // This is a hacky solution to get the most up to date context and ref. Sorry.
-  static BuildContext? _context;
-  static WidgetRef? _ref;
-
   String _getFormattedDuration(Duration duration) {
     int minutes = duration.inMinutes;
     int seconds = duration.inSeconds.remainder(60);
@@ -257,8 +252,6 @@ class DownloadSelectionView extends ConsumerWidget {
         ),
       );
     }
-    _context = context;
-    _ref = ref;
 
     return Column(
       children: [
@@ -318,16 +311,7 @@ class DownloadSelectionView extends ConsumerWidget {
                     );
                   }
                   else {
-                    ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider), 
-                    onErrorReported: (error) {
-                      _ref!.read(errorListProvider.notifier).state.add(error);
-                      ScaffoldMessenger.of(_context!).showSnackBar(
-                        const SnackBar(
-                          showCloseIcon: true,
-                          content: Text("Error downloading a video. Check the error tab for more details.")
-                        )
-                      );
-                    });
+                    ref.read(downloadProgressProvider.notifier).setDownloadProgressTargets(ref.read(downloadListProvider), ref.read(downloadLocationProvider));
                     DefaultTabController.of(context).animateTo(2);
                   }
                 }

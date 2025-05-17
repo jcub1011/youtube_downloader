@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../entities/video_retriever.dart';
 import 'configuration_page.dart';
 import 'download_list.dart';
 import 'download_overview_page.dart';
@@ -18,7 +17,7 @@ class DownloaderApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: true, 
       home: DefaultTabController(
-        length: 4,
+        length: 3,
         child: Scaffold(
           appBar: AppBar(
             title: const Text(
@@ -35,7 +34,6 @@ class DownloaderApp extends StatelessWidget {
                 Tab(text: "Configuration"),
                 Tab(text: "Download Selections"),
                 Tab(text: "Download Progress"),
-                Tab(text: "Download Errors"),
               ],
             ),
           ),
@@ -44,7 +42,6 @@ class DownloaderApp extends StatelessWidget {
               ConfigurationPage(),
               DownloadSelectionView(),
               DownloadOverviewPage(),
-              ErrorPage(),
             ],
           ),
         ),
