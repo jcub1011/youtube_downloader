@@ -99,12 +99,16 @@ class ConfigurationPage extends ConsumerWidget {
     });
 
     return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          DownloadLocationSelector(),
-          DownloadLinkSelector(),
-        ],
+      child: Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Column(
+          spacing: 12,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DownloadLocationSelector(),
+            DownloadLinkSelector(),
+          ],
+        ),
       ),
     );
   }
@@ -122,59 +126,56 @@ class _DownloadLinkSelectorState extends ConsumerState<DownloadLinkSelector> {
   Widget build(BuildContext context) {
     var sourceUrlController = TextEditingController(text: ref.read(downloadSourceProvider));
 
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          TextFormField(
-            onEditingComplete: () {
-              log("URL: ${sourceUrlController.text}");
+    return Column(
+      spacing: 12,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        TextFormField(
+          onEditingComplete: () {
+            log("URL: ${sourceUrlController.text}");
+            PersistentAppSettings.saveDownloadLink(sourceUrlController.text);
+          },
+          controller: sourceUrlController,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.normal,
+          ),
+          decoration: const InputDecoration(
+            labelText: 'Enter URL here...', 
+            labelStyle: TextStyle(
+              color: Color.fromARGB(255, 27, 153, 139),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        TextButton(
+          style: Theme.of(context).textButtonTheme.style,
+          onPressed: () {
+            log("URL: ${sourceUrlController.text}");
+
+            if (sourceUrlController.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    showCloseIcon: true,
+                    content: Text("Enter a link first.")
+                  )
+                );
+            }
+            else {
+              ref.read(downloadListProvider.notifier)
+                .setDownloadSource(sourceUrlController.text);
+              ref.read(downloadSourceProvider.notifier).state = sourceUrlController.text;
               PersistentAppSettings.saveDownloadLink(sourceUrlController.text);
-            },
-            controller: sourceUrlController,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.normal,
-            ),
-            decoration: const InputDecoration(
-              labelText: 'Enter URL here...', 
-              labelStyle: TextStyle(
-                color: Color.fromARGB(255, 27, 153, 139),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextButton(
-            style: Theme.of(context).textButtonTheme.style,
-            onPressed: () {
-              log("URL: ${sourceUrlController.text}");
 
-              if (sourceUrlController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      showCloseIcon: true,
-                      content: Text("Enter a link first.")
-                    )
-                  );
-              }
-              else {
-                ref.read(downloadListProvider.notifier)
-                  .setDownloadSource(sourceUrlController.text);
-                ref.read(downloadSourceProvider.notifier).state = sourceUrlController.text;
-                PersistentAppSettings.saveDownloadLink(sourceUrlController.text);
-
-                DefaultTabController.of(context).animateTo(1);
-              }
-            },
-            child: const Text(
-              "Load Download List",
-            ),
+              DefaultTabController.of(context).animateTo(1);
+            }
+          },
+          child: const Text(
+            "Load Download List",
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

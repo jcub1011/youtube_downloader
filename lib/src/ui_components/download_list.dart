@@ -263,7 +263,7 @@ class DownloadSelectionView extends ConsumerWidget {
               TextButton(
                 child: const Row(
                   children: [
-                    Icon(Icons.check_box, color: Color(0xFF44CFCB)),
+                    Icon(Icons.check_box),
                     SizedBox(width: 8),
                     Text(
                       "Select All",
@@ -278,7 +278,7 @@ class DownloadSelectionView extends ConsumerWidget {
               TextButton(
                 child: const Row(
                   children: [
-                    Icon(Icons.check_box_outline_blank, color: Color(0xFF44CFCB)),
+                    Icon(Icons.check_box_outline_blank),
                     SizedBox(width: 8),
                     Text(
                       "Deselect All",
@@ -293,7 +293,7 @@ class DownloadSelectionView extends ConsumerWidget {
               TextButton(
                 child: const Row(
                   children: [
-                    Icon(Icons.download, color: Color(0xFF44CFCB)),
+                    Icon(Icons.download),
                     SizedBox(width: 8),
                     Text(
                       "Download Selected",
@@ -325,6 +325,8 @@ class DownloadSelectionView extends ConsumerWidget {
             itemBuilder: (context, index) {
               var item = downloadList[index];
               return CheckboxListTile(
+                fillColor: WidgetStateProperty.all<Color>(const Color.fromARGB(0, 244, 96, 54)),
+                checkboxScaleFactor: 1.25,
                 controlAffinity: ListTileControlAffinity.leading,
                 title: DefaultTextStyle(
                   style: const TextStyle(
@@ -336,7 +338,10 @@ class DownloadSelectionView extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(item.title),
-                      Text(" ${item.video?.author} | ${_getFormattedDuration(item.video?.duration ?? const Duration(seconds: 0))}"),
+                      Text(
+                        " ${item.video?.author} | ${_getFormattedDuration(item.video?.duration ?? const Duration(seconds: 0))}",
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
                     ],
                   ),
                 ),

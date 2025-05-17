@@ -111,6 +111,23 @@ class DownloaderApp extends StatelessWidget {
             fontStyle: FontStyle.italic,
           ),
         ),
+        iconButtonTheme: const IconButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll<Color>(Color.fromARGB(175, 244, 96, 54)),
+            overlayColor: WidgetStatePropertyAll<Color>(Color.fromARGB(255, 244, 96, 54)),
+            iconColor: WidgetStatePropertyAll<Color>(Colors.white),
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        checkboxTheme: CheckboxThemeData(
+          checkColor: WidgetStateProperty.all<Color>(const Color.fromARGB(255, 244, 96, 54)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(2),
+          ),
+          side: BorderSide.none,
+        ),
       ),
     );
   }
